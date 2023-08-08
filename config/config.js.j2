@@ -1,0 +1,39 @@
+const path = require ('path');
+const CONFIG_PATH = '/etc/ssl/certs/{{ main_domain }}';
+
+const APP_SETTINGS = {
+  // Origin
+  PROTOCOL: '{{ app_protocol }}',
+  PORT: {{ app_port }},
+  HOST: '{{ app_domain }}',
+  SSL_KEY: path.join (CONFIG_PATH, '{{ app_ssl_key }}'),
+  SSL_CERT: path.join (CONFIG_PATH, '{{ app_ssl_crt }}'),
+  ACCEPT_CONTENT_TYPE: 'application/json; charset=utf-8',
+  ACCEPT_TYPE: ['application/json', 'application/x-www-form-urlencoded'],
+  POWER_BY: 'BeTall Technology',
+
+  TIMEZONE: 'Asia/Ho_Chi_Minh',
+
+  // Database
+  DB_CONNECTION_STRING: 'mongodb://{{ mongo.user }}:{{ mongo.pass }}@{{ mongo.ip }}:{{ mongo.port }}/{{ mongo.name }}?ssl={{ app_connect_mongo_ssl }}',
+  
+  POSTGRES_CONNECTION_STRING: {
+    host: '127.0.0.1' ,// Change this to your PostgreSQL server's address if it's remote
+    database: 'alpha',
+    user: 'postgres',
+    password: 'password',
+    port: '5432' // Default PostgreSQL port is 5432
+  },
+
+  // output logs
+  LOG_LEVEL: '{{ logging.level }}',
+  ZIPKIN: {
+    NAME: '{{ zipkin.name }}',
+    ENDPOINT: '{{ zipkin.endpoint }}'
+  },
+ CORS: [
+   'https://domain.com'
+ ]
+};
+ 
+module.exports = APP_SETTINGS;

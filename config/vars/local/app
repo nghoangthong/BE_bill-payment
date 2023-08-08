@@ -1,0 +1,33 @@
+
+APPLICATION_ENVIRONMENT: local
+
+main_domain: 'betall.vn'
+app_protocol: 'https'
+app_port: 3001
+app_ssl_port: 4001
+app_domain: 'api.betall.vn'
+app_ssl_key: 'betall.vn.key.pem'
+app_ssl_crt: 'betall.vn.crt.pem'
+app_connect_mongo_ssl: false
+
+application:
+  name: api
+  host: 127.0.0.1
+  port: 3001
+  checks_name: "web-ping"
+  interval: 10s
+  tags: example01
+
+zipkin:
+  name: example-backend-service
+  endpoint: http://127.0.0.1:9411/api/v2/spans
+
+logging:
+  level: 'debug'
+
+mongo:
+  port: 27017
+  user: admin
+  pass: rgwYq3RyiMKJBmMuS423
+  name: exampledb
+  ip: 127.0.0.1
