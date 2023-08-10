@@ -6,6 +6,7 @@ class Model {
         switch (dbName) {
             case dbType:
                 this.model = new PostgresDB();
+                break;
             default:
                 this.model = new PostgresDB();
         }

@@ -8,7 +8,7 @@
 const CONSTANT = {
   AUTH_HEADER_KEY: 'authorization',
   AUTH_HEADER_SCHEME: 'Bearer',
-
+  AUTH_HEADER_CONTENT_TYPE: 'application/json',
   // HTTP STATUS CODES
   HTTP_STATUS_OK: 200,
   HTTP_STATUS_BAD_REQUEST: 400,

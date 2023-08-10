@@ -7,7 +7,7 @@ class PostgreSQL extends Connections {
         super('postgres');
 
         const configDB = global.APP_SETTINGS.POSTGRES_CONNECTION_STRING;
-
+        
         this.pool = new Pool({
             host: configDB.host, // Change this to your PostgreSQL server's address if it's remote
             database: configDB.database,
@@ -69,5 +69,4 @@ class PostgreSQL extends Connections {
 //         console.log('Connected Failed');
 //     }
 // }
-
 module.exports = PostgreSQL;

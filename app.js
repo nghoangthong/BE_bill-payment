@@ -170,7 +170,10 @@ app.use ((req, res, next) => {
 
 // UNSET FAVICON
 app.use (nofavicon ());
-
+const Model = require('./app/models/Model');
+const Postgre = new Model(global.CONSTANT.POSTGRES_DB);
+require('./app/libraries/Utils/CreateSignature');
+require('./app/libraries/Utils/CreateJWT');
 app.use ((req, res, next) => {
   // Go and validate request's security here (you can implement the following methods: HMAC, RSA, ACCESS TOKEN, STUB)
   next ();
