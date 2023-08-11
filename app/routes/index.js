@@ -8,7 +8,7 @@ function route(app) {
 
     app.use('/v1/news', newsRouter);
     app.use('/v1/posts', postsRouter);
-    app.use('/v1/service/bill', billRouter)
+    app.use('/v1/bill', billRouter)
 }   
 
 module.exports = route;

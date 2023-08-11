@@ -19,5 +19,5 @@ const payload = {
 
 const secretKey = APP_SETTINGS.SECRET_KEY;
 const token = jwt.sign(payload, secretKey, { header });
-console.log('token', token);
+// console.log('token', token);
 module.exports = token;

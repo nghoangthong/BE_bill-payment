@@ -38,20 +38,20 @@ const ErrorHandler = require ('./app/middlewares/Error/ErrorHandler');
 const NotAcceptableError = require ('./app/libraries/Exception/NotAcceptableError');
 
 //===== ZIPKIN Middleware Declare
-const {Tracer} = require ('zipkin');
-const zipkinMiddleware = require ('zipkin-instrumentation-express').expressMiddleware;
-const CLSContext = require ('zipkin-context-cls');
-const ctxImpl = new CLSContext ('zipkin');
-const {recorder} = require ('./app/middlewares/Zipkin/Recorder');
-const localServiceName = APP_SETTINGS.ZIPKIN.NAME;
-global.tracer = new Tracer ({ctxImpl, recorder: recorder (), localServiceName});
+// const {Tracer} = require ('zipkin');
+// const zipkinMiddleware = require ('zipkin-instrumentation-express').expressMiddleware;
+// const CLSContext = require ('zipkin-context-cls');
+// const ctxImpl = new CLSContext ('zipkin');
+// const {recorder} = require ('./app/middlewares/Zipkin/Recorder');
+// const localServiceName = APP_SETTINGS.ZIPKIN.NAME;
+// global.tracer = new Tracer ({ctxImpl, recorder: recorder (), localServiceName});
 
 
 //===== CREATE EXPRESS INSTANCE
 const app = express ();
 
 //===== RUN ZIPKIN MIDDLEWARE
-app.use (zipkinMiddleware ({tracer}));
+// app.use (zipkinMiddleware ({tracer}));
 
 /**
  * Running API behind LB
@@ -171,9 +171,9 @@ app.use ((req, res, next) => {
 // UNSET FAVICON
 app.use (nofavicon ());
 const Model = require('./app/models/Model');
-const Postgre = new Model(global.CONSTANT.POSTGRES_DB);
-require('./app/libraries/Utils/CreateSignature');
-require('./app/libraries/Utils/CreateJWT');
+// const Postgre = new Model(global.CONSTANT.POSTGRES_DB);
+// require('./app/libraries/Utils/CreateSignature');
+// require('./app/libraries/Utils/CreateJWT');
 app.use ((req, res, next) => {
   // Go and validate request's security here (you can implement the following methods: HMAC, RSA, ACCESS TOKEN, STUB)
   next ();

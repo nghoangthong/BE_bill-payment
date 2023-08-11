@@ -14,24 +14,29 @@ function createSignature(data, secretKey) {
 }
 
 const bill_check = {
-  "partnerRefId": "AB1234",
+  "partnerRefId": "AB123",
   "billCode": "BILL_SUCCESS",
   "serviceCode": "EVN",
 };
 
 const bill_pay = {
   "amount": 10000,
-  "billDetail": "[{\"billNumber\":\"9uiDyYoVtxzCvtmF\",\"period\":\"08/2099\",\"amount\":10000,\"billCreated\":\"\",\"billExpiry\":\"\",\"billType\":\"\",\"billOtherInfo\":\"\",\"isPartialPaymentAllowed\":false,\"extraInfo\":\"\"}]",
+  "billDetail": "[{\"billNumber\":\"rb6GTrQ0zn6zWrVB\",\"period\":\"08/2099\",\"amount\":10000,\"billCreated\":\"\",\"billExpiry\":\"\",\"billType\":\"\",\"billOtherInfo\":\"\",\"isPartialPaymentAllowed\":false,\"extraInfo\":\"\"}]",
   "partnerRefId": "AB123",
   "billCode": "BILL_SUCCESS",
   "serviceCode": "EVN",
 };
 
+const transaction = "AB123";
+
 
 function bodyJson(data){
-  data["signature"] = createSignature(data, APP_SETTINGS.SECRET_KEY);
-  return data
+  const newData = { ...data };
+  newData["signature"] = createSignature(newData, APP_SETTINGS.SECRET_KEY);
+  // console.log(JSON.stringify(newData));
+  return newData;
 };
+
 module.exports = {
-  bodyJson,bill_check, bill_pay
+  bodyJson,bill_check, bill_pay, transaction
 };
