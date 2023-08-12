@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const BillController = require('../controller/BillControllers');
+const BillControllers = require('../controller/BillsController');
 
 // router.get('/pay', BillController.bill);
-router.get('/check', BillController.check);
-router.get('/pay', BillController.pay);
-router.get('/transaction', BillController.transaction);
+router.get('/check', BillControllers.check);
+router.get('/pay', BillControllers.payment);
+router.get('/transaction', BillControllers.transactions);
 module.exports = router;
 
