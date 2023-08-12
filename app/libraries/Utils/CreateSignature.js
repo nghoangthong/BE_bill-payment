@@ -13,13 +13,13 @@ function createSignature(data, secretKey) {
   return signature;
 }
 
-const bill_check = {
+const BillCheck = {
   "partnerRefId": "AB123",
   "billCode": "BILL_SUCCESS",
   "serviceCode": "EVN",
 };
 
-const bill_pay = {
+const BillPay = {
   "amount": 10000,
   "billDetail": "[{\"billNumber\":\"rb6GTrQ0zn6zWrVB\",\"period\":\"08/2099\",\"amount\":10000,\"billCreated\":\"\",\"billExpiry\":\"\",\"billType\":\"\",\"billOtherInfo\":\"\",\"isPartialPaymentAllowed\":false,\"extraInfo\":\"\"}]",
   "partnerRefId": "AB123",
@@ -27,7 +27,7 @@ const bill_pay = {
   "serviceCode": "EVN",
 };
 
-const transaction = "AB123";
+const Transaction = "AB123";
 
 
 function bodyJson(data){
@@ -38,5 +38,5 @@ function bodyJson(data){
 };
 
 module.exports = {
-  bodyJson,bill_check, bill_pay, transaction
+  bodyJson,BillCheck, BillPay, Transaction
 };

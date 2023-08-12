@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const BillController = require('../controller/BillController');
+const BillController = require('../controller/BillControllers');
 
 // router.get('/pay', BillController.bill);
 router.get('/check', BillController.check);

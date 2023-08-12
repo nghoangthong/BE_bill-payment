@@ -1,6 +1,6 @@
 const newsRouter = require('./news');
 const postsRouter = require('./posts');
-const billRouter = require('./bill')
+const billRouter = require('./bills')
 function route(app) {
     app.get('/', (req, res) => {
         res.send('Hello World!');
