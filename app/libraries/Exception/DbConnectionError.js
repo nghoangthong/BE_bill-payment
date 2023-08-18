@@ -1,8 +1,8 @@
-module.exports = class DbConnectionError extends require ('./AppError') {
-  constructor (message, code) {
-    // Providing default message and overriding status code.
-    super (message || 'Database connection error', code);
+const CONSTANT = require("../../../config/constant");
+const AppError = require("./AppError");
 
-    this.code = this.statusCode = code;
+module.exports = class DbConnectionError extends AppError {
+  constructor(message, response) {
+    super(message, CONSTANT.HTTP_STATUS_INTERNAL_SERVER_ERROR, response);
   }
 };

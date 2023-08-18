@@ -16,7 +16,22 @@
             "develop" - For DEVELOP environment
             "staging" - For STAGING environment
             "production" - For PRODUCTION environment
-### Update hosts file
+
+### Environment configurations
+    Local
+        Domain: bill-payment.alphacore.local
+        Variables: ./config/vars/local/app
+    Development
+        Domain: bill-payment02.alphacore.tech
+        Variables: ./config/vars/develop/app
+    Staging
+        Domain: bill-payment01.alphacore.tech
+        Variables: ./config/vars/staging/app
+    Production
+        Domain: bill-payment.alphacore.tech
+        Variables: ./config/vars/production/app
+
+### Update hosts file (following the environment that you specify the correct domain)
  
     # BEGIN EXAMPLE EXPRESSJS PROJECT
     127.0.0.1       bill-payment.alphacore.tech

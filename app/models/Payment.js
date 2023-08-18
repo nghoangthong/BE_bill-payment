@@ -1,9 +1,9 @@
-const Models = require("./Model");
+const Model = require("./Model");
 
-class PayMent extends Models {
+class Payment extends Model {
     // protected pool: Pool;
-    constructor(dbType) {
-        super(dbType);
+    constructor() {
+        super();
     }
 
     // create table biilcheck
@@ -106,4 +106,4 @@ class PayMent extends Models {
     }
 }
 
-module.exports = new PayMent(CONSTANT.POSTGRES_DB);
+module.exports = new Payment();

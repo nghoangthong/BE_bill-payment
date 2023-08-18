@@ -1,33 +1,44 @@
 
 APPLICATION_ENVIRONMENT: local
 
-main_domain: 'betall.vn'
-app_protocol: 'https'
+main_domain: 'alphacore.local'
+app_protocol: 'http'
 app_port: 3001
 app_ssl_port: 4001
-app_domain: 'api.betall.vn'
-app_ssl_key: 'betall.vn.key.pem'
-app_ssl_crt: 'betall.vn.crt.pem'
-app_connect_mongo_ssl: false
+app_domain: 'bill-payment.alphacore.local'
+app_ssl_key: 'alphacore.local.key.pem'
+app_ssl_crt: 'alphacore.local.crt.pem'
 
 application:
-  name: api
+  name: bill-payment
   host: 127.0.0.1
   port: 3001
   checks_name: "web-ping"
   interval: 10s
-  tags: example01
+  tags: bill-payment
 
 zipkin:
-  name: example-backend-service
+  name: bill-payment-service
   endpoint: http://127.0.0.1:9411/api/v2/spans
 
 logging:
   level: 'debug'
 
-mongo:
-  port: 27017
-  user: admin
-  pass: rgwYq3RyiMKJBmMuS423
-  name: exampledb
+postgres:
+  port: 5432
+  user: postgres
+  pass: postgres
+  name: bill-payment
   ip: 127.0.0.1
+
+rsa:
+  private_key: ''
+  public_key: ''
+
+partners:
+  appotapay:
+    connection:
+      api_uri: 'https://gateway.dev.appotapay.com'
+      partner_code: 'APPOTAPAY'
+      api_key: 'FJcmF8uj2ISveL5FvvNk4pnp8xrhINz8'
+      secret_key: 'XAonJgy14YhtePEITXhyBS2unjfJLAV3'

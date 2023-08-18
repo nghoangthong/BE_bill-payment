@@ -35,9 +35,9 @@ const Logger = createLogger({
     new transports.DailyRotateFile({
       level: APP_SETTINGS.LOG_LEVEL,
       filename: __ROOT + "/logs/app-%DATE%.log",
-      datePattern: "YYYY-MM-DD",
+      datePattern: 'YYYY-MM-DD',
       zippedArchive: true,
-      maxFiles: "30d",
+      maxFiles: '30d',
       handleExceptions: true,
       json: false,
       colorize: false,
@@ -45,12 +45,12 @@ const Logger = createLogger({
   ],
   exceptionHandlers: [
     new transports.DailyRotateFile({
-      level: "error",
+      level: 'error',
       filename: __ROOT + "/logs/error-%DATE%.log",
-      datePattern: "YYYY-MM-DD",
+      datePattern: 'YYYY-MM-DD',
       zippedArchive: true,
-      maxSize: "9m",
-      maxFiles: "30d",
+      maxSize: '9m',
+      maxFiles: '30d',
       handleExceptions: true,
       json: false,
       colorize: false,

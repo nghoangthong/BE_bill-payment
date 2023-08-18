@@ -1,11 +1,11 @@
 
-APPLICATION_ENVIRONMENT: development
+APPLICATION_ENVIRONMENT: staging
 
 main_domain: 'alphacore.tech'
 app_protocol: 'http'
 app_port: 3001
 app_ssl_port: 4001
-app_domain: 'bill-payment02.alphacore.tech'
+app_domain: 'bill-payment01.alphacore.tech'
 app_ssl_key: 'alphacore.tech.key.pem'
 app_ssl_crt: 'alphacore.tech.crt.pem'
 
@@ -22,12 +22,12 @@ zipkin:
   endpoint: http://127.0.0.1:9411/api/v2/spans
 
 logging:
-  level: 'debug'
+  level: 'info'
 
 postgres:
   port: 5432
   user: admin
-  pass: ********
+  pass: ***********
   name: bill-payment
   ip: 127.0.0.1
 

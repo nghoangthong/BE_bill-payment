@@ -34,8 +34,6 @@ const CONSTANT = {
   DATE_ISO8601: 'Y-m-d\\TH:i:sO', // Example: 2005-08-15T15:52:01+0000
 
   OK: 'OK',
-
-  POSTGRES_DB: 'postgres'
 };
 
 module.exports = CONSTANT;

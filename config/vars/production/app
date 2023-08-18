@@ -1,11 +1,11 @@
 
-APPLICATION_ENVIRONMENT: development
+APPLICATION_ENVIRONMENT: production
 
 main_domain: 'alphacore.tech'
 app_protocol: 'http'
 app_port: 3001
 app_ssl_port: 4001
-app_domain: 'bill-payment02.alphacore.tech'
+app_domain: 'bill-payment.alphacore.tech'
 app_ssl_key: 'alphacore.tech.key.pem'
 app_ssl_crt: 'alphacore.tech.crt.pem'
 
@@ -22,12 +22,12 @@ zipkin:
   endpoint: http://127.0.0.1:9411/api/v2/spans
 
 logging:
-  level: 'debug'
+  level: 'info'
 
 postgres:
   port: 5432
   user: admin
-  pass: ********
+  pass: ***********
   name: bill-payment
   ip: 127.0.0.1
 
@@ -38,7 +38,7 @@ rsa:
 partners:
   appotapay:
     connection:
-      api_uri: 'https://gateway.dev.appotapay.com'
-      partner_code: 'APPOTAPAY'
-      api_key: 'FJcmF8uj2ISveL5FvvNk4pnp8xrhINz8'
-      secret_key: 'XAonJgy14YhtePEITXhyBS2unjfJLAV3'
+      api_uri: 'https://gateway.appotapay.com'
+      partner_code: '***'
+      api_key: '***'
+      secret_key: '***'

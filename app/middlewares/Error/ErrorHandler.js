@@ -5,36 +5,78 @@
  * @type {*|start}
  */
 
-const statuses = require ('statuses');
+const statuses = require("statuses");
+const CONSTANT = require("../../../config/constant");
+const AppError = require("../../libraries/Exception/AppError");
 
-const production = process.env.APPLICATION_ENVIRONMENT === 'production';
+/**
+ *
+ * @param {any} error
+ * @param {import("express").Request} request
+ * @param {import("express").Response} response
+ * @param {import("express").NextFunction} next
+ */
+function errorHandler(error, request, response, next) {
+    Logger.debug('|--------------------o0o--------------------|');
+    Logger.debug('|               Request ended!              |');
+    Logger.debug('|--------------------o0o--------------------|');
 
-// handle common api errors
-// TODO: We should define error in more details
-const ErrorHandler = function () {
-  return function errorHandler (err, req, res, next) {
-    Logger.debug ('|--------------------o0o--------------------|');
-    Logger.debug ('|               Request ended!              |');
-    Logger.debug ('|--------------------o0o--------------------|');
-
-    let status = err.status || err.statusCode || CONSTANT.HTTP_STATUS_INTERNAL_SERVER_ERROR;
-    res.statusCode = status;
-
-    let body = {
-      code: err.code || status,
-      name: err.name || 'Error'
-      //, type: err.type || null
+    let status = CONSTANT.HTTP_STATUS_INTERNAL_SERVER_ERROR;
+    const responseError = {
+        code: CONSTANT.HTTP_STATUS_INTERNAL_SERVER_ERROR,
+        message: statuses.message[CONSTANT.HTTP_STATUS_INTERNAL_SERVER_ERROR],
     };
+    let outMessage;
 
-    // show the stacktrace when not in production
-    if (!production) {
-      body.stack = err.stack;
+    // getting general response information
+    if (error instanceof AppError) {
+        status = error.status;
+
+        responseError.code = status;
+        responseError.message = error.message;
+        responseError.data = error.responseData;
+
+        outMessage = error.errorDetail ?? JSON.stringify(error.errorDetail);
     }
 
-    // client errors
-    body.errorDetails = err.message;
+    // handling specific case bases on its name
+    // TODO: add error name when a new error class is created
+    switch (error.name) {
+        case 'RequestValidationError':
+        case 'HttpNotAcceptableError':
+        case 'HttpNotFoundError':
+            break;
 
-    res.json ({message: statuses[status], code: status, data: body});
-  }
-};
-module.exports = ErrorHandler;
+        case 'PayloadTooLargeError':
+        case 'UnsupportedMediaTypeError':
+        case 'BadRequestError': {
+            status = error.status;
+            responseError.code = status;
+            responseError.message = error.message;
+
+            outMessage = [error.name, JSON.stringify(error)].join(" - ");
+            break;
+        }
+
+        case 'RsaAuthError': {
+            status = 401;
+            responseError.code = status;
+            responseError.message = statuses.message[status];
+            responseError.data = error.message;
+
+            outMessage = ['RsaAuthError', error.message].join(" - ");
+            break;
+        }
+
+        default:
+            outMessage = error;
+            break;
+    }
+
+    // store log
+    outMessage && Logger.error(outMessage);
+
+    response.status(status).json(responseError);
+}
+
+module.exports = {errorHandler};

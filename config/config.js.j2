@@ -10,19 +10,17 @@ const APP_SETTINGS = {
   SSL_CERT: path.join (CONFIG_PATH, '{{ app_ssl_crt }}'),
   ACCEPT_CONTENT_TYPE: 'application/json; charset=utf-8',
   ACCEPT_TYPE: ['application/json', 'application/x-www-form-urlencoded'],
-  POWER_BY: 'BeTall Technology',
+  POWER_BY: 'AlphaCoreTS',
 
+  LOCALE_CODE: 'vi-VN',
   TIMEZONE: 'Asia/Ho_Chi_Minh',
 
-  // Database
-  DB_CONNECTION_STRING: 'mongodb://{{ mongo.user }}:{{ mongo.pass }}@{{ mongo.ip }}:{{ mongo.port }}/{{ mongo.name }}?ssl={{ app_connect_mongo_ssl }}',
-  
   POSTGRES_CONNECTION_STRING: {
-    host: '127.0.0.1' ,// Change this to your PostgreSQL server's address if it's remote
-    database: 'alpha',
-    user: 'postgres',
-    password: 'password',
-    port: '5432' // Default PostgreSQL port is 5432
+    host: '{{ postgres.ip }}' ,// Change this to your PostgreSQL server's address if it's remote
+    database: '{{ postgres.name }}',
+    user: '{{ postgres.user }}',
+    password: '{{ postgres.pass }}',
+    port: '{{ postgres.port }}' // Default PostgreSQL port is 5432
   },
 
   // output logs
@@ -31,9 +29,42 @@ const APP_SETTINGS = {
     NAME: '{{ zipkin.name }}',
     ENDPOINT: '{{ zipkin.endpoint }}'
   },
- CORS: [
-   'https://domain.com'
- ]
+  RSA: {
+    PRIVATE_KEY: '{{ rsa.private_key }}',
+    PUBLIC_KEY: '{{ rsa.public_key }}',
+  },
+  CORS: [
+   'https://{{ main_domain }}'
+  ],
+  PARTNERS: {
+    APPOTAPAY: {
+        CONNECTION: {
+            API_URI: '{{ partners.appotapay.connection.api_uri }}',
+            PARTNER_CODE: '{{ partners.appotapay.connection.partner_code }}',
+            API_KEY: '{{ partners.appotapay.connection.api_key }}',
+            SECRET_KEY: '{{ partners.appotapay.connection.secret_key }}'
+        },
+        HEADERS: {
+           AUTH_HEADER_KEY: 'X-APPOTAPAY-AUTH',
+           AUTH_HEADER_SCHEME: 'Bearer',
+           AUTH_HEADER_CONTENT_TYPE: 'application/json'
+        },
+        ENDPOINTS: {
+           BILL_CHECK: {
+               METHOD: 'POST',
+               ENDPOINT: '/api/v1/service/bill/check'
+           },
+           BILL_PAYMENT: {
+               METHOD: 'POST',
+               ENDPOINT: '/api/v1/service/bill/pay'
+           },
+           BILL_TRANSACTIONS: {
+               METHOD: 'GET',
+               ENDPOINT: '/api/v1/service/bill/transaction/{partnerRefId}'
+           }
+        }
+    }
+  }
 };
  
 module.exports = APP_SETTINGS;
