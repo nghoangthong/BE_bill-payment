@@ -175,7 +175,7 @@ app.use(nofavicon());
 
 //======== ALL REQUESTS MUST BE AUTHORIZED
 const RSAAuthMiddleware = require('./app/middlewares/Auth/RSAAuth');
-//app.use(RSAAuthMiddleware);
+app.use(RSAAuthMiddleware);
 
 //======== CONTROLLER ROUTING
 const route = require('./app/routes');

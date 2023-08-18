@@ -4,11 +4,6 @@ const {v4: uuidv4} = require('uuid');
 const JWTGenerator = require('../libraries/AppotaPay/JWTGenerator');
 const SignatureGenerator = require('../libraries/AppotaPay/SignatureGenerator');
 const ResponseBuilder = require("../libraries/Common/Builders/ResponseBuilder");
-const {validateRequestSchema} = require("../middlewares/Common/ValidateRequest");
-const {
-    validateBillsCheckSchema,
-    validateHeaderSchema
-} = require('../libraries/AppotaPay/ValidationSchemas/BillsRequestSchema');
 
 class BillsController {
     /**
@@ -30,12 +25,6 @@ class BillsController {
         let partnerRefId = uuidv4();
 
         try {
-            /**
-             * Step 1: validate headers and request body
-             */
-            validateRequestSchema('headers', validateHeaderSchema);
-            validateRequestSchema('body', validateBillsCheckSchema);
-
             /**
              * Step 2: lookup Bill Code on DB
              */
