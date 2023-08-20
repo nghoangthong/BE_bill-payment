@@ -15,7 +15,7 @@ class BillCheck extends Model {
      * @returns {Promise<*>}
      */
     async getBillByBillCodeAsync(billCode) {
-        let sql = `SELECT * FROM ${this.tableName} WHERE billcode = $1 AND created_at >= NOW() - INTERVAL '1 minutes'`;
+        let sql = `SELECT * FROM ${this.tableName} WHERE billcode = $1 AND created_at >= NOW() - INTERVAL '30 minutes'`;
         let result = await this.model.query(sql, [billCode]);
 
         return result.rows[0];

@@ -176,6 +176,7 @@ class BillsController {
         } catch (error) {
             Logger.error(`===BillsController::payment -- Error while making payment for the bill:${billCode} and partnerRefId:${partnerRefId} and serviceCode:${serviceCode} \n`);
             Logger.error(error);
+            Logger.error(error.response.data);
 
             next(error);
         }
