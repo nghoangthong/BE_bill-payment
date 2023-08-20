@@ -1,5 +1,5 @@
-const statuses = require("statuses");
-const CONSTANT = require("../../../config/constant");
+const statuses = require('statuses');
+const CONSTANT = require('../../../config/constant');
 
 module.exports = class AppError extends Error {
   constructor(message, status, responseData, errorDetail) {

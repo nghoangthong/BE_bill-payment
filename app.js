@@ -7,16 +7,16 @@
 
 const express = require('express');
 const accessLogger = require('morgan');
-const bodyParser = require('body-parser');
 const nofavicon = require('express-no-favicons');
 const process = require('process');
 const path = require('path');
 const fs = require('fs');
 const compression = require('compression');
-const helmet = require("helmet");
+const helmet = require('helmet');
 const cookieParser = require('cookie-parser');
 const methodOverride = require('method-override');
-const cors = require("cors");
+const cors = require('cors');
+const useragent = require('express-useragent');
 
 //===== define root path
 global.__ROOT = __dirname + '/';
@@ -67,12 +67,6 @@ let PORT = APP_SETTINGS.PORT;
 let HOST = APP_SETTINGS.HOST;
 let PROTOCOL = APP_SETTINGS.PROTOCOL;
 
-//===== COMPRESS RESPONSE
-app.use(compression());
-
-// Armoring the API with Helmet
-app.use(helmet());
-
 //===== ENABLE LOG
 const rfs = require('rotating-file-stream');
 
@@ -88,6 +82,9 @@ let accessLogStream = rfs.createStream('access.log', {
 app.use(accessLogger('combined', {stream: accessLogStream}));
 
 app.use((req, res, next) => {
+    Logger.info(`Bill Payment Service -- X-Request-Id: ${req.headers['x-request-id']}\n`);
+    Logger.info(`Bill Payment Service -- X-Tenant-Id: ${req.headers['x-tenant-id']}\n`);
+
     // Service only accepts the submitted data with the following content-types: application/json and application/x-www-form-urlencoded
     if (req.method === 'POST' || req.method === 'PUT' || req.method === 'PATCH') {
         let contentType = req.get('content-type');
@@ -102,42 +99,24 @@ app.use((req, res, next) => {
 });
 
 //===== INITIATE PARSER
-/**
- * @see https://coderwall.com/p/qrjfcw/capture-raw-post-body-in-express-js
- *
- * @param req
- * @param res
- * @param buf
- * @param encoding
- */
-let rawBodySaver = function (req, res, buf, encoding) {
-    if (buf && buf.length) {
-        req.rawBody = buf.toString(encoding || 'utf8');
-    } else {
-        req.rawBody = empty(req.body) ? '' : req.body;
-    }
-
-    Logger.debug("\n\n");
-    Logger.debug('|--------------------o0o--------------------|');
-    Logger.debug('|               Request started!            |');
-    Logger.debug('|--------------------o0o--------------------|');
-
-    Logger.debug('Api request body:');
-    Logger.debug(req.rawBody);
-};
-
 // If one of bodyParser middleware apply then next one will not run.
 // If request is not a json nor urlencoded then raw parser will process it.
-app.use(bodyParser.json({verify: rawBodySaver}));
-app.use(bodyParser.urlencoded({verify: rawBodySaver, extended: true}));
-app.use(bodyParser.raw({
-    verify: rawBodySaver, type: function () {
-        return true
-    }
-}));
+app.use(express.json());
+app.use(express.urlencoded({extended: false}));
+
+app.use(methodOverride('X-HTTP-Method-Override'));
+
+app.use(useragent.express());
+
+// UNSET FAVICON
+app.use(nofavicon());
+//===== COMPRESS RESPONSE
+app.use(compression());
+
+// Armoring the API with Helmet
+app.use(helmet());
 
 app.use(cookieParser());
-app.use(methodOverride('X-HTTP-Method-Override'));
 app.use(cors({origin: APP_SETTINGS.CORS, credentials: true}));
 
 //===== IMPLEMENT MIDDLE-WARES LOGIC HERE
@@ -156,9 +135,19 @@ app.use((req, res, next) => {
     // to the API (e.g. in case you use sessions)
     res.setHeader('Access-Control-Allow-Credentials', false);
 
-    res.setHeader("Content-Type", APP_SETTINGS.ACCEPT_CONTENT_TYPE);
+    res.setHeader('Content-Type', APP_SETTINGS.ACCEPT_CONTENT_TYPE);
 
-    res.setHeader("Accept", APP_SETTINGS.ACCEPT_TYPE.join(', '));
+    res.setHeader('Accept', APP_SETTINGS.ACCEPT_TYPE.join(', '));
+
+    // set Request Id from Gateway
+    if (req.headers['x-service-id']) {
+        res.setHeader('X-Request-Id', req.headers['x-service-id']);
+    }
+
+    // set Tenant Id from Gateway
+    if (req.headers['x-tenant-id']) {
+        res.setHeader('X-Tenant-Id', req.headers['x-tenant-id']);
+    }
 
     // set power-by
     res.setHeader('X-Powered-By', APP_SETTINGS.POWER_BY);
@@ -170,12 +159,9 @@ app.use((req, res, next) => {
     next(); // make sure we go to the next routes and don't stop here
 });
 
-// UNSET FAVICON
-app.use(nofavicon());
-
 //======== ALL REQUESTS MUST BE AUTHORIZED
 const RSAAuthMiddleware = require('./app/middlewares/Auth/RSAAuth');
-app.use(RSAAuthMiddleware);
+// app.use(RSAAuthMiddleware);
 
 //======== CONTROLLER ROUTING
 const route = require('./app/routes');
@@ -183,18 +169,19 @@ const route = require('./app/routes');
 //Routes init
 route(app);
 
+//===== ERROR HANDLER
+app.use(errorHandler);
+
 // MUST ADD ERROR HANDLER AT VERY BOTTOM
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
     next(new HttpNotFoundError());
 });
 
-//===== ERROR HANDLER
-app.use(errorHandler);
-
 //===== START SERVER
 app.listen(PORT, () => {
-    console.log(`Example app listening on port ${PORT}`);
+    Logger.info(`Bill Payment Service is listening on port ${PORT}`);
+    console.log(`Bill Payment Service is listening on port ${PORT}`);
 });
 
 module.exports = app;

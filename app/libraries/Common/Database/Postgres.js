@@ -20,8 +20,8 @@ class Postgres extends Connection {
             password: connectionStr.password
         });
 
-        this.pool.query("SET TIME ZONE 'Asia/Ho_Chi_Minh'");
-        Logger.info(`\n\nPostgres::constructor -- Executed query to set timezone='Asia/Ho_Chi_Minh'.\n`);
+        this.pool.query('SET TIME ZONE \'Asia/Ho_Chi_Minh\'');
+        Logger.info('Postgres::constructor -- Executed query to set timezone=\'Asia/Ho_Chi_Minh\'.');
     }
 
     /**
@@ -31,9 +31,9 @@ class Postgres extends Connection {
     async connect() {
         try {
             await this.pool.connect();
-            Logger.info(`\n\nPostgres::connect -- Connected to PostgreSQL database.\n`);
+            Logger.info('Postgres::connect -- Connected to PostgreSQL database.');
         } catch (err) {
-            Logger.error(`\n\nPostgres::connect -- Error connecting to the database.\n`);
+            Logger.error('Postgres::connect -- Error connecting to the database.');
             Logger.error(err);
             throw err;
         }
@@ -46,9 +46,9 @@ class Postgres extends Connection {
     async disconnect() {
         try {
             await this.pool.end();
-            Logger.info(`\n\nPostgres::disconnect -- Disconnected from PostgreSQL database.\n`);
+            Logger.info('Postgres::disconnect -- Disconnected from PostgreSQL database.');
         } catch (err) {
-            Logger.error(`\n\nPostgres::disconnect -- Error disconnecting from the database.\n`);
+            Logger.error('Postgres::disconnect -- Error disconnecting from the database.');
             Logger.error(err);
             throw err;
         }
@@ -64,18 +64,18 @@ class Postgres extends Connection {
     async query(text, params) {
         const startTime = Date.now();
         try {
-            Logger.debug(`\n\nPostgres::query -- Executing query...\n`);
+            Logger.debug('Postgres::query -- Executing query...');
             Logger.debug(text);
             Logger.debug(params);
 
             let result = await this.pool.query(text, params);
             let durationTime = Date.now() - startTime;
 
-            Logger.debug(`\nExecuted query `, text, ` - duration: ${durationTime} - parameters:`, params, "\n");
+            Logger.debug('Executed query ', text, ` - duration: ${durationTime} - parameters:`, params);
 
             return result;
         } catch (err) {
-            Logger.error(`\n\nPostgres::query -- Error executing query.\n`);
+            Logger.error('Postgres::query -- Error executing query.');
             Logger.error(err);
             throw err;
         }

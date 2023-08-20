@@ -12,7 +12,6 @@ npm-debug.log
 node_modules
 config.gypi
 *.orig
-package-lock.json
 
 I*~
 .DS_Store

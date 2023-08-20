@@ -10,7 +10,7 @@ class SignatureGenerator {
         let hmacKey = crypto.createHmac('sha256', APP_SETTINGS.PARTNERS.APPOTAPAY.CONNECTION.SECRET_KEY);
         let signature = hmacKey.update(sortedString).digest('hex');
 
-        Logger.debug(`\n\n===SignatureGenerator::generate - Generated signature based on parameters `, params, `: ${signature}\n`);
+        Logger.debug(`===SignatureGenerator::generate - Generated signature based on parameters `, params, `: ${signature}\n`);
 
         return signature;
     }

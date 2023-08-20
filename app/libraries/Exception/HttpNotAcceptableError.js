@@ -1,5 +1,5 @@
-const CONSTANT = require("../../../config/constant");
-const AppError = require("./AppError");
+const CONSTANT = require('../../../config/constant');
+const AppError = require('./AppError');
 
 module.exports = class HttpNotAcceptableError extends AppError {
     constructor(message, response) {
