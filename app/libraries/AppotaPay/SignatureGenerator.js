@@ -1,6 +1,12 @@
 const crypto = require('crypto');
 
 class SignatureGenerator {
+    /**
+     * Generate request signature
+     *
+     * @param params
+     * @returns {Promise<ArrayBuffer>}
+     */
     generate (params) {
         // sort
         let sortedParams = Object.keys(params).sort();

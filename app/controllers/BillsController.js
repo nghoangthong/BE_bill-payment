@@ -1,11 +1,11 @@
-const BillCheckModel = require("../models/BillCheck");
-const BillPaymentModel = require("../models/Payment");
+const BillCheckModel = require('../models/BillCheck');
+const BillPaymentModel = require('../models/Payment');
 const axios = require("axios");
 const {v4: uuidv4} = require('uuid');
 const JWTGenerator = require('../libraries/AppotaPay/JWTGenerator');
 const SignatureGenerator = require('../libraries/AppotaPay/SignatureGenerator');
-const ResponseBuilder = require("../libraries/Common/Builders/ResponseBuilder");
-const RequestValidationError = require("../libraries/Exception/RequestValidationError");
+const ResponseBuilder = require('../libraries/Common/Builders/ResponseBuilder');
+const RequestValidationError = require('../libraries/Exception/RequestValidationError');
 
 class BillsController {
     /**
@@ -78,7 +78,7 @@ class BillsController {
                 service_code: serviceCode ? serviceCode : '',
                 response: (Object.prototype.toString.call(error.response.data) === '[object Object]') ? error.response.data : {
                     message: error.response.data,
-                    errorCode: CONSTANT.HTTP_STATUS_NOT_FOUND
+                    errorCode: error.response.status
                 }
             });
 
@@ -137,6 +137,7 @@ class BillsController {
         let serviceCode = req.body.service_code;
         let partnerRefId = req.body.partner_ref_id;
         let amount = req.body.amount;
+        let billDetails = '';
 
         try {
             // TODO: define a master data to provide the service codes to mobile app
@@ -152,6 +153,10 @@ class BillsController {
             if (bill && bill.response.errorCode === 0) {
                 Logger.debug(`BillsController::payment -- Bill does exist, so pay the bill...\n`);
 
+                // TODO: cần kiểm tra amount có bằng với billDetail.amount hay không? (tùy thuộc vào tùy chọn có cho phép chia nhỏ hóa đơn để thanh toán hay không)?
+                // TODO: cần kiểm tra amount phải không lớn hơn billDetail.amount
+
+                billDetails = JSON.stringify(bill.response.billDetail);
                 let record = await this.#payBill({
                     // the bill number that user inputs
                     billCode: billCode,
@@ -159,7 +164,7 @@ class BillsController {
                     partnerRefId: partnerRefId,
                     serviceCode: serviceCode,
                     amount: amount,
-                    billDetail: bill.response.billDetail
+                    billDetail: billDetails
                 });
 
                 // response
@@ -177,6 +182,18 @@ class BillsController {
             Logger.error(`===BillsController::payment -- Error while making payment for the bill:${billCode} and partnerRefId:${partnerRefId} and serviceCode:${serviceCode} \n`);
             Logger.error(error);
             Logger.error(error.response.data);
+
+            await BillPaymentModel.saveRecordAsync({
+                billCode: billCode ? billCode : '',
+                partner_ref_id: partnerRefId ? partnerRefId : '',
+                service_code: serviceCode ? serviceCode : '',
+                amount: amount ? amount : 0,
+                bill_details: billDetails,
+                response: (Object.prototype.toString.call(error.response.data) === '[object Object]') ? error.response.data : {
+                    message: error.response.data,
+                    errorCode: error.response.status
+                }
+            });
 
             next(error);
         }

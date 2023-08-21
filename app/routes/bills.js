@@ -36,5 +36,6 @@ router.post('/payment',
  * Endpoint: GET /v1/bill/transactions
  */
 router.get('/transactions', BillsController.transactions);
+
 module.exports = router;
 
