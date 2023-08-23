@@ -1,6 +1,5 @@
 const Postgres = require('../libraries/Common/Database/Postgres');
 const PgHelper = require('../libraries/Common/Database/PgHelper');
-const DbConnectionError = require('../libraries/Exception/DbConnectionError');
 
 /**
  * Base model
