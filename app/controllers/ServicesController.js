@@ -53,7 +53,7 @@ class ServicesController {
             return res.json(serviceCategory);
         } else {
             Logger.error('Service not found');
-            return res.status(404).json({
+            return res.status(CONSTANT.HTTP_STATUS_NOT_FOUND).json({
                 message: "Service not found",
                 errorCode: CONSTANT.HTTP_STATUS_NOT_FOUND,
             });
