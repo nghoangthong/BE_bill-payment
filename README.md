@@ -73,6 +73,3 @@
     + https://scotch.io/tutorials/better-node-with-es6-pt-i
     + https://scotch.io/tutorials/better-javascript-with-es6-pt-ii-a-deep-dive-into-classes
     + https://scotch.io/tutorials/better-javascript-with-es6-pt-iii-cool-collections-slicker-strings
-- Payload Parser
-    + https://github.com/expressjs/body-parser#bodyparserrawoptions
-    + https://coderwall.com/p/qrjfcw/capture-raw-post-body-in-express-js
