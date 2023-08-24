@@ -1,4 +1,4 @@
-const Joi = require("joi");
+const Joi = require('joi');
 
 const validateServiceParams = Joi.object({
     'service_id': Joi.string().trim().required().messages({
