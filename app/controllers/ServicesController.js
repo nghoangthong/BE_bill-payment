@@ -21,7 +21,7 @@ class ServicesController {
     serviceCategories = (req, res, next) => {
         try {
             Logger.debug('ServicesController::serviceCategories -- Get list of services.');
-            const resData = this.#readBillServices();
+            let resData = this.#readBillServices();
             // response
             return res.json(
                 ResponseBuilder.init().withData(resData.service_categories).build()
@@ -68,8 +68,8 @@ class ServicesController {
      */
     #readBillServices() {
         try {
-            const fileContent = fs.readFileSync(__ROOT + APP_SETTINGS.SERVICES_MASTER_DATA_FILE_PATH, 'utf8');
-            const jsonData = JSON.parse(fileContent);
+            let fileContent = fs.readFileSync(__ROOT + APP_SETTINGS.SERVICES_MASTER_DATA_FILE_PATH, 'utf8');
+            let jsonData = JSON.parse(fileContent);
 
             return jsonData;
         } catch (error) {
