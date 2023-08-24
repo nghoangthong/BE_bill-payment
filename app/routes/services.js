@@ -5,7 +5,7 @@ const ServicesController = require('../controllers/ServicesController');
 /**
  * Endpoint: GET /v1/services
  */
-router.get('/services', ServicesController.servicecategories);
+router.get('/services', ServicesController.serviceCategories);
 
 /**
  * Endpoint: GET /v1/services/:service_id

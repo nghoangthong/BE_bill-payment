@@ -26,9 +26,9 @@ logging:
 
 postgres:
   port: 5432
-  user: postgres
-  pass: postgres
-  name: bill-payment
+  user: admin
+  pass: admin
+  name: bill-payment-v1
   ip: 127.0.0.1
 
 rsa:

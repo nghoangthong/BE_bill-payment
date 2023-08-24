@@ -1,5 +1,5 @@
-const statuses = require("statuses");
-const CONSTANT = require("../../../../config/constant");
+const statuses = require('statuses');
+const CONSTANT = require('../../../../config/constant');
 
 /**
  * @description create a builder that construct the general data response structure based on API standard
