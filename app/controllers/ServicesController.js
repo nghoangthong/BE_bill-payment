@@ -1,14 +1,12 @@
 const ResponseBuilder = require('../libraries/Common/Builders/ResponseBuilder');
+const fs = require('fs');
 
 class ServicesController {
-    #billServices = null;
-
     /**
      *
      * @returns {ServicesController}
      */
     constructor() {
-        this.#billServices = this.#readBillServices();
         return this;
     }
 
@@ -20,23 +18,64 @@ class ServicesController {
      * @param next
      * @returns {*}
      */
-    services = (req, res, next) => {
+    serviceCategories = (req, res, next) => {
         try {
-            Logger.debug(`\n\nServicesController::services -- Get list of services.\n`);
-
+            Logger.debug('ServicesController::serviceCategories -- Get list of services.');
+            let resData = this.#readBillServices();
             // response
             return res.json(
+                ResponseBuilder.init().withData(resData.service_categories).build()
+            );
+        } catch (error) {
+            Logger.error(error);
+            next(error);
+        }
+    };
+
+    /**
+     * Get list of services in a specific category
+     *
+     * @param req
+     * @param res
+     * @param next
+     * @returns {*}
+     */
+    services = (req, res, next) => {
+        try {
+            let serviceId = req.params.service_id;
+            serviceId = serviceId.toUpperCase();
+
+            Logger.debug('ServicesController::services -- Get list of services.');
+
+            let resData = this.#readBillServices();
+            let serviceItems = resData.services[serviceId];
+
+            return res.json(
                 ResponseBuilder.init()
-                    .withData({})
+                    .withData(serviceItems ? serviceItems : {})
                     .build()
             );
         } catch (error) {
+            Logger.error(error);
             next(error);
         }
-    }
+    };
 
+    /**
+     * Read masterdata
+     *
+     * @returns {any}
+     */
     #readBillServices() {
-        return null;
+        try {
+            let fileContent = fs.readFileSync(__ROOT + APP_SETTINGS.SERVICES_MASTER_DATA_FILE_PATH, 'utf8');
+            let jsonData = JSON.parse(fileContent);
+
+            return jsonData;
+        } catch (error) {
+            logger.error('Error while reading masterdata file:', error);
+            throw error;
+        }
     }
 }
 
