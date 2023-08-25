@@ -103,7 +103,7 @@
       "FB_EC": "Thu hộ Easy Credit",
       "FB_GC": "Thu hộ Global Care"
     },
-    "BILL_TELEVISION": {
+    "BILL_TELEPHONE": {
       "TB_VT_Mobile": "Dịch vụ di động Viettel (Trả sau)",
       "TB_VT_LandLine": "Dịch vụ điện thoại cố định Viettel",
       "TB_VT_Homephone": "Dịch vụ Homephone Viettel",
@@ -111,7 +111,9 @@
       "TB_TSMB": "Trả sau Mobiphone",
       "TB_SST": "Dịch vụ cố định Nam Sài Gòn",
       "TB_STC": "Cố định STC",
-      "TB_SPT": "Cố định SPT",
+      "TB_SPT": "Cố định SPT"
+    },
+    "BILL_TELEVISION": {
       "TVB_ADS_TV_VT": "Truyền Hình Viettel",
       "TVB_TV_FPT": "Truyền hình FPT",
       "TVB_TV_VTC": "Truyền hình VTC",
