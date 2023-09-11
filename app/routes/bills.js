@@ -4,7 +4,8 @@ const {validateRequestSchema} = require("../middlewares/Common/ValidateRequest")
 const {
     validateHeaderSchema,
     validateBillCheckSchema,
-    validateBillPaymentSchema
+    validateBillPaymentSchema,
+    validateTransactionsParams
 } = require('../libraries/AppotaPay/ValidationSchemas/BillsRequestSchema');
 const BillsController = require('../controllers/BillsController');
 
@@ -35,7 +36,9 @@ router.post('/payment',
 /**
  * Endpoint: GET /v1/bill/transactions
  */
-router.get('/transactions', BillsController.transactions);
+router.get('/transactions/:partner_ref_id',
+    validateRequestSchema('params', validateTransactionsParams), 
+    BillsController.transactions);
 
 module.exports = router;
 

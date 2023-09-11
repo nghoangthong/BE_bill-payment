@@ -58,8 +58,20 @@ const validateBillPaymentSchema = Joi.object({
     stripUnknown: true,
 });
 
+const validateTransactionsParams = Joi.object({
+    'partner_ref_id': Joi.string().trim().required().messages({
+        'string.base': 'id phải là chuỗi',
+        'string.empty': 'id không được bỏ trống',
+        'any.required': 'id không được bỏ trống',
+    })
+}).options({
+    allowUnknown: true,
+    stripUnknown: true,
+});
+
 module.exports = {
     validateHeaderSchema,
     validateBillCheckSchema,
-    validateBillPaymentSchema
+    validateBillPaymentSchema,
+    validateTransactionsParams
 };

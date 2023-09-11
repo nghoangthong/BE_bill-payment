@@ -51,6 +51,44 @@ class Model {
             throw error;
         }
     }
+
+    // async updateBillStatusByPartnerRefId(partnerRefId, newStatus) {
+    //     const query = `
+    //       UPDATE ${this.tableName}
+    //       SET bill_status = $1
+    //       WHERE partner_ref_id = $2;
+    //     `;
+      
+    //     const values = [newStatus, partnerRefId];
+      
+    //     try {
+    //       await this.model.query(query, values);
+    //       console.log(`Updated bill_status for partner_ref_id ${partnerRefId} to ${newStatus}`);
+    //     } catch (error) {
+    //       console.error('Error updating bill_status:', error);
+    //     }
+    // }
+
+    async getBillDataByPartnerRefId(partnerRefId) {
+        const query = `
+          SELECT *
+          FROM ${this.tableName}
+          WHERE partner_ref_id = $1;
+        `;
+      
+        const values = [partnerRefId];
+      
+        try {
+          const result = await this.model.query(query, values);
+          const billData = result.rows[0]; // Lấy tất cả dữ liệu của bản ghi đầu tiên
+          return billData;
+        } catch (error) {
+          console.error('Error retrieving bill data:', error);
+          throw error;
+        }
+      }
+      
+      
 }
 
 module.exports = Model;
