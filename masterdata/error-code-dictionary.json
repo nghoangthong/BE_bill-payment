@@ -1,0 +1,45 @@
+{
+    "Success": {
+        "0": "Thành công"
+    },
+
+    "Error": {
+        "133": "Giao dịch bị từ chối",
+        "31": "Mã giao dịch bị trùng",
+        "32": "Số tiền không hợp lệ",
+        "33": "Giao dịch không thành công",
+        "36": "Giao dịch không tồn tại",
+        "92": "IP không được phép truy cập",
+        "114": "Mã hoá đơn không đúng hoặc chưa đến hạn thanh toán",
+        "115": "Hoá đơn đã hết hạn thanh toán",
+        "116": "Hoá đơn không tồn tại",
+        "118": "Hoá đơn đã được thanh toán",
+        "120": "Hoá đơn đã bị huỷ",
+        "121": "Hoá đơn đã được xử lý",
+        "122": "Không tìm thấy thông tin nợ cước của hoá đơn này",
+        "123": "Truy vấn thông tin hoá đơn gặp lỗi, vui lòng thực hiện lại giao dịch",
+        "124": "Thông tin hoá đơn không đúng",
+        "130": "Không tìm thấy thông tin khách hàng",
+        "131": "Số điện thoại chưa được hỗ trợ"
+      },
+      
+    "Retry":{
+        "99": "Lỗi không xác định, vui lòng kiểm tra lại giao dịch sau",
+        "40": "Hệ thống đang bảo trì, vui lòng thử lại sau",
+        "41": "Nhà mạng ngừng hoạt động hoặc đang bảo trì",
+        "91": "Hệ thống đang bận, vui lòng thử lại sau",
+        "110": "Nhà cung cấp dịch vụ không tồn tại hoặc đang bảo trì",
+        "112": "Dịch vụ không tồn tại hoặc đang bảo trì",
+        "117": "Số tiền thanh toán hoá đơn không hợp lệ",
+        "119": "Dịch vụ đang bảo trì, vui lòng thử lại sau"
+    },
+    "Pending":{
+        "34": "Giao dịch đang được xử lý vui lòng kiểm tra lại sau",
+        "35": "Giao dịch đang chờ xử lý vui lòng kiểm tra lại sau",
+        "99": "Lỗi không xác định, vui lòng kiểm tra lại giao dịch sau",
+        "91": "Hệ thống đang bận, vui lòng thử lại sau",
+        "500": "Hệ thống gặp lỗi, vui lòng thử lại sau",
+        "132": "Giao dịch đang được xử lý, quý khách vui lòng kiểm tra lại tài khoản hoặc liên hệ hotline 19006004 để được hỗ trợ"
+    }
+      
+}

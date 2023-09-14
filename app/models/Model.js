@@ -52,22 +52,22 @@ class Model {
         }
     }
 
-    // async updateBillStatusByPartnerRefId(partnerRefId, newStatus) {
-    //     const query = `
-    //       UPDATE ${this.tableName}
-    //       SET bill_status = $1
-    //       WHERE partner_ref_id = $2;
-    //     `;
+    async updateBillStatusByPartnerRefId(partnerRefId, newStatus) {
+        const query = `
+          UPDATE ${this.tableName}
+          SET bill_status = $1
+          WHERE partner_ref_id = $2;
+        `;
       
-    //     const values = [newStatus, partnerRefId];
+        const values = [newStatus, partnerRefId];
       
-    //     try {
-    //       await this.model.query(query, values);
-    //       console.log(`Updated bill_status for partner_ref_id ${partnerRefId} to ${newStatus}`);
-    //     } catch (error) {
-    //       console.error('Error updating bill_status:', error);
-    //     }
-    // }
+        try {
+          await this.model.query(query, values);
+          console.log(`Updated bill_status for partner_ref_id ${partnerRefId} to ${newStatus}`);
+        } catch (error) {
+          console.error('Error updating bill_status:', error);
+        }
+    }
 
     async getBillDataByPartnerRefId(partnerRefId) {
         const query = `
@@ -80,15 +80,32 @@ class Model {
       
         try {
           const result = await this.model.query(query, values);
-          const billData = result.rows[0]; // Lấy tất cả dữ liệu của bản ghi đầu tiên
-          return billData;
+          return result.rows[0];
         } catch (error) {
           console.error('Error retrieving bill data:', error);
           throw error;
         }
       }
       
+    async getBillDataByBillNumber(billnumber) {
+      const query = `
+        SELECT *
+        FROM ${this.tableName}
+        WHERE bill_number = $1;
+      `;
+    
+      const values = [billnumber];
+    
+      try {
+        const result = await this.model.query(query, values);
+        return result.rows[0];
+      } catch (error) {
+        console.error('Error retrieving bill data:', error);
+        throw error;
+      }
+    }
       
+
 }
 
 module.exports = Model;
