@@ -52,6 +52,7 @@ class Model {
         }
     }
 
+    //update BillStatus By PartnerRefId
     async updateBillStatusByPartnerRefId(partnerRefId, newStatus) {
         const query = `
           UPDATE ${this.tableName}
@@ -69,6 +70,7 @@ class Model {
         }
     }
 
+    //get BillData By PartnerRefId
     async getBillDataByPartnerRefId(partnerRefId) {
         const query = `
           SELECT *
@@ -86,26 +88,26 @@ class Model {
           throw error;
         }
       }
+     
       
-    async getBillDataByBillNumber(billnumber) {
-      const query = `
-        SELECT *
-        FROM ${this.tableName}
-        WHERE bill_number = $1;
-      `;
+    // async getBillDataByBillNumber(billnumber) {
+    //   const query = `
+    //     SELECT *
+    //     FROM ${this.tableName}
+    //     WHERE bill_number = $1;
+    //   `;
     
-      const values = [billnumber];
+    //   const values = [billnumber];
     
-      try {
-        const result = await this.model.query(query, values);
-        return result.rows[0];
-      } catch (error) {
-        console.error('Error retrieving bill data:', error);
-        throw error;
-      }
-    }
+    //   try {
+    //     const result = await this.model.query(query, values);
+    //     return result.rows[0];
+    //   } catch (error) {
+    //     console.error('Error retrieving bill data:', error);
+    //     throw error;
+    //   }
+    // }
       
-
 }
 
 module.exports = Model;

@@ -1,6 +1,7 @@
 const BillCheckModel = require('../models/BillCheck');
 const BillPaymentModel = require('../models/Payment');
 const TransactionModel = require('../models/Transactions');
+const PaymentHistories = require('../models/PaymentHistories');
 const axios = require('axios');
 const { v4: uuidv4 } = require('uuid');
 const JWTGenerator = require('../libraries/AppotaPay/JWTGenerator');
@@ -148,7 +149,7 @@ class BillsController {
     let partnerRefId = req.body.partner_ref_id;
     let amount = req.body.amount;
     let billDetails = '';
-    let billNumber = '';
+    // let billNumber = '';
     let payment = await BillPaymentModel.getBillDataByPartnerRefId(partnerRefId)
     
     try {
@@ -158,6 +159,11 @@ class BillsController {
       /**
        * Step 2: check if bill code exists
        */
+      if(payment){
+
+        return res.json(ResponseBuilder.init().withData(payment).build());
+
+      } else{
       Logger.debug(
         `\n\nBillsController::payment -- Lookup Bill by billCode:${billCode} serviceCode:${serviceCode} partnerRefId:${partnerRefId}\n`
       );
@@ -202,14 +208,35 @@ class BillsController {
           })
         );
       }
+    }
+    //end if else
+    
     } catch (error) {
       Logger.error(
         `===BillsController::payment -- Error while making payment for the bill:${billCode} and partnerRefId:${partnerRefId} and serviceCode:${serviceCode} \n`
       );
       Logger.error(error);
       Logger.error(error.response.data);
-      let parsedBillDetails = JSON.parse(billDetails);
-      billNumber = parsedBillDetails[0].billNumber;
+      // let parsedBillDetails = JSON.parse(billDetails);
+      // billNumber = parsedBillDetails[0].billNumber;
+
+      await PaymentHistories.saveRecordAsync({
+        bill_status: 'Error',
+        billCode: billCode ? billCode : '',
+        partner_ref_id: partnerRefId ? partnerRefId : '',
+        service_code: serviceCode ? serviceCode : '',
+        amount: amount ? amount : 0,
+        // bill_number: billNumber ? billNumber : '',
+        bill_details: billDetails,
+        response:
+          Object.prototype.toString.call(error.response.data) ===
+          '[object Object]'
+            ? error.response.data
+            : {
+                message: error.response.data,
+                errorCode: error.response.status,
+              },
+      });
 
       await BillPaymentModel.saveRecordAsync({
         bill_status: 'Error',
@@ -217,7 +244,7 @@ class BillsController {
         partner_ref_id: partnerRefId ? partnerRefId : '',
         service_code: serviceCode ? serviceCode : '',
         amount: amount ? amount : 0,
-        bill_number: billNumber ? billNumber : '',
+        // bill_number: billNumber ? billNumber : '',
         bill_details: billDetails,
         response:
           Object.prototype.toString.call(error.response.data) ===
@@ -232,15 +259,6 @@ class BillsController {
     }
   };
 
-  billStatus(errorCode) {
-    if (errorCode === 0) {
-      return 'Success';
-    } else if (errorCode === 34 || errorCode === 35) {
-      return 'Pending';
-    } else {
-      return 'Error';
-    }
-  }
 
   /**
    * Make a request to pay the bill to AppotaPay
@@ -276,12 +294,21 @@ class BillsController {
 
     Logger.debug('BillsController::#payBill -- Response: ', resData);
     let billstatus = new GetJsonData().Status(resData.data.errorCode);
-    let parsedBillDetails = JSON.parse(reqPayload.billDetail);
-    billNumber = parsedBillDetails[0].billNumber;
+    // let parsedBillDetails = JSON.parse(reqPayload.billDetail);
+    // billNumber = parsedBillDetails[0].billNumber;
     // persist data into table
+    await PaymentHistories.saveRecordAsync({
+      bill_status: billstatus,
+      billcode: reqPayload.billCode,
+      partner_ref_id: reqPayload.partnerRefId,
+      service_code: reqPayload.serviceCode,
+      amount: reqPayload.amount,
+      bill_details: reqPayload.billDetail,
+      response: resData.data,
+      });
+
     return await BillPaymentModel.saveRecordAsync({
       bill_status: billstatus,
-      bill_number: billNumber,
       billcode: reqPayload.billCode,
       partner_ref_id: reqPayload.partnerRefId,
       service_code: reqPayload.serviceCode,
@@ -290,6 +317,7 @@ class BillsController {
       response: resData.data,
     });
   }
+
 
   /**
    * Query the status of a specific transaction
@@ -307,32 +335,29 @@ class BillsController {
       );
       if ((billdata && billdata.bill_status === 'Success') || (billdata && billdata.bill_status === 'Error'))
       {
-        // console.log('vào if')
         return res.json(
           ResponseBuilder.init().withData(billdata.response).build()
         );
-      } else if (billdata && billdata.bill_status === 'Pending') {
-        // console.log('vào else if 1')
-        let resData = await this.#getBillTransactions(partner_ref_id)
-        let billstatus = this.billStatus(resData.data.errorCode);
 
+      } else if (billdata && billdata.bill_status === 'Pending'|| (billdata && billdata.bill_status === 'Retry')) {
+        let resData = await this.#getBillTransactions(partner_ref_id)
+        let billstatus = new GetJsonData().Status(resData.data.errorCode);
         let record = await TransactionModel.saveRecordAsync({
           bill_status: billstatus,
           partner_ref_id: partner_ref_id,
           response: resData.data,
         });
-
+        
+        await BillPaymentModel.updateBillStatusByPartnerRefId(partner_ref_id,billstatus)
         return res.json(
           ResponseBuilder.init().withData(record).build())
-      } else if(billdata && billdata.bill_status === 'Retry'){
-        console.log('retry')
+
       } 
-      else{
-        
+
+      else{      
         Logger.error(
           `===BillsController::transactions -- Error:${partner_ref_id} \n`
         );
-        console.log('không tồn tại')
 
         let record = {
             code: 4002,
@@ -348,7 +373,6 @@ class BillsController {
       Logger.error(
         `===BillsController::transaction -- Error checking transaction:${req.params.partner_ref_id} \n`
       );
-      console.log(error)
       Logger.error(error.response.data);
 
       await TransactionModel.saveRecordAsync({
@@ -374,7 +398,7 @@ class BillsController {
       'Content-Type': 'application/json',
     };
 
-    const response = await axios.get(
+    const resData = await axios.get(
       APP_SETTINGS.PARTNERS.APPOTAPAY.CONNECTION.API_URI +
         APP_SETTINGS.PARTNERS.APPOTAPAY.ENDPOINTS.BILL_TRANSACTIONS
           .ENDPOINT +
@@ -386,7 +410,7 @@ class BillsController {
         headers: headers,
       }
     );
-    return response
+    return resData
   }
   
 
