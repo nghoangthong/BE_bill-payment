@@ -5,7 +5,7 @@ const {
     validateHeaderSchema,
     validateBillCheckSchema,
     validateBillPaymentSchema,
-    validateTransactionsParams
+    validateTransactionsParams,
 } = require('../libraries/AppotaPay/ValidationSchemas/BillsRequestSchema');
 const BillsController = require('../controllers/BillsController');
 
