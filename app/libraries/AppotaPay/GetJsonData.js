@@ -2,7 +2,7 @@ const fs = require('fs');
 
 class GetJsonData {
 
-     Status(errorCode) {
+     billStatus(errorCode) {
         try {
           // Đọc dữ liệu từ tệp JSON
           const rawData = fs.readFileSync(APP_SETTINGS.ERROR_FILE_PATH);

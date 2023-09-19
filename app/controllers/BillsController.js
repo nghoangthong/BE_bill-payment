@@ -293,7 +293,7 @@ class BillsController {
     );
 
     Logger.debug('BillsController::#payBill -- Response: ', resData);
-    let billstatus = new GetJsonData().Status(resData.data.errorCode);
+    let billstatus = new GetJsonData().billStatus(resData.data.errorCode);
     // let parsedBillDetails = JSON.parse(reqPayload.billDetail);
     // billNumber = parsedBillDetails[0].billNumber;
     // persist data into table
@@ -341,7 +341,7 @@ class BillsController {
 
       } else if (billdata && billdata.bill_status === 'Pending'|| (billdata && billdata.bill_status === 'Retry')) {
         let resData = await this.#getBillTransactions(partner_ref_id)
-        let billstatus = new GetJsonData().Status(resData.data.errorCode);
+        let billstatus = new GetJsonData().billStatus(resData.data.errorCode);
         let record = await TransactionModel.saveRecordAsync({
           bill_status: billstatus,
           partner_ref_id: partner_ref_id,
