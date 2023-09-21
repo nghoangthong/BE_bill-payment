@@ -4,7 +4,6 @@ class GetJsonData {
 
      billStatus(errorCode) {
         try {
-          // Đọc dữ liệu từ tệp JSON
           const rawData = fs.readFileSync(APP_SETTINGS.ERROR_FILE_PATH);
           const jsonData = JSON.parse(rawData);
           if (jsonData.Error && jsonData.Error[errorCode]) {
@@ -22,6 +21,37 @@ class GetJsonData {
           }
       
           return 'unknown';
+        } catch (error) {
+          console.error('Lỗi khi đọc tệp JSON:', error);
+          throw error;
+        }
+      }
+
+      getServiceCode(serviceCode) {
+        try {
+          const rawData = fs.readFileSync(APP_SETTINGS.SERVICES_MASTER_DATA_FILE_PATH);
+          const jsonData = JSON.parse(rawData);
+          const serviceGroups = [
+            "BILL_ELECTRIC",
+            "BILL_WATER",
+            "BILL_TELEVISION",
+            "BILL_INTERNET",
+            "BILL_TELEPHONE",
+          ];
+        
+          for (const group of serviceGroups) {
+            if (jsonData.services[group] && jsonData.services[group][serviceCode]) {
+              return "one";
+            }
+          }
+        
+          if (jsonData.services["BILL_FINANCE"] && jsonData.services["BILL_FINANCE"][serviceCode]) {
+            return "many";
+          }
+        
+          return "unknown";
+        
+      
         } catch (error) {
           console.error('Lỗi khi đọc tệp JSON:', error);
           throw error;
