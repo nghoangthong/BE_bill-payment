@@ -153,7 +153,7 @@ class BillsController {
     let billDetails = '';
     // let billNumber = '';
     // LET BILL
-    let payment = await BillPaymentModel.getBillDataByPartnerRefId(partnerRefId)
+    let billData = await BillPaymentModel.getBillDataByPartnerRefId(partnerRefId)
 
     try {
       // TODO: define a master data to provide the service codes to mobile app
@@ -162,9 +162,9 @@ class BillsController {
       /**
        * Step 2: check if bill code exists
        */
-      if (payment) {
+      if (billData) {
 
-        return res.json(ResponseBuilder.init().withData(payment).build());
+        return res.json(ResponseBuilder.init().withData(billData.response).build());
 
       } else {
         Logger.debug(
@@ -190,7 +190,6 @@ class BillsController {
 
           if (typeService === APP_SETTINGS.TYPESERVICE.ONE) {
             if (parsedBillDetails[0].amount === amount) {
-              console.log("typeService === 'one' && billDetails.amount === amount");
               let record = await this.#payBill({
                 billCode: billCode,
                 partnerRefId: partnerRefId,
@@ -198,11 +197,9 @@ class BillsController {
                 amount: amount,
                 billDetail: billDetails,
               });
-          
               // response
-              return res.json(ResponseBuilder.init().withData(record).build());
+              return res.json(ResponseBuilder.init().withData(record.response).build());
             } else {
-              console.log("Kiem tra lai amount");
               let record = {
                 code: 4002,
                 message: 'Số tiền thanh toán không phù hợp.',
@@ -211,9 +208,7 @@ class BillsController {
             }
           }
           
-
           if(isManyService && isAmountValid ) {
-            console.log("typeService === 'many' && parsedBillDetails[0].amount >= APP_SETTINGS.MIN_AMOUNT && parsedBillDetails[0].amount < amount")
             // let record = await this.#payBill({
             //   billCode: billCode,
             //   partnerRefId: partnerRefId,
@@ -258,7 +253,6 @@ class BillsController {
         partner_ref_id: partnerRefId ? partnerRefId : '',
         service_code: serviceCode ? serviceCode : '',
         amount: amount ? amount : 0,
-        // bill_number: billNumber ? billNumber : '',
         bill_details: billDetails,
         response:
           Object.prototype.toString.call(error.response.data) ===
@@ -276,7 +270,6 @@ class BillsController {
         partner_ref_id: partnerRefId ? partnerRefId : '',
         service_code: serviceCode ? serviceCode : '',
         amount: amount ? amount : 0,
-        // bill_number: billNumber ? billNumber : '',
         bill_details: billDetails,
         response:
           Object.prototype.toString.call(error.response.data) ===
@@ -326,8 +319,6 @@ class BillsController {
 
     Logger.debug('BillsController::#payBill -- Response: ', resData);
     let billstatus = new GetJsonData().billStatus(resData.data.errorCode);
-    // let parsedBillDetails = JSON.parse(reqPayload.billDetail);
-    // billNumber = parsedBillDetails[0].billNumber;
     // persist data into table
     await PaymentHistories.saveRecordAsync({
       bill_status: billstatus,
@@ -385,12 +376,11 @@ class BillsController {
             await BillPaymentModel.updateDataByPartnerRefId(partner_ref_id, 'response', resData.data);
             await BillPaymentModel.updateDataByPartnerRefId(partner_ref_id, 'bill_status', billstatus);
     
-            return res.json(ResponseBuilder.init().withData(record).build());
+            return res.json(ResponseBuilder.init().withData(record.response).build());
           }
         }
       }
     
-      // Trường hợp trạng thái không hợp lệ hoặc không có dữ liệu billdata
       Logger.error(`===BillsController::transactions -- Error:${partner_ref_id} \n`);
       let record = {
         code: 4002,
