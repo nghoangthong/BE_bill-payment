@@ -362,61 +362,52 @@ class BillsController {
   transactions = async (req, res) => {
     try {
       let partner_ref_id = req.params.partner_ref_id;
-      let billdata = await BillPaymentModel.getBillDataByPartnerRefId(
-        partner_ref_id
-      );
-      if ((billdata && billdata.bill_status === 'Success') || (billdata && billdata.bill_status === 'Error')) {
-        return res.json(
-          ResponseBuilder.init().withData(billdata.response).build()
-        );
-
-      } else if ((billdata && billdata.bill_status === 'Pending') || (billdata && billdata.bill_status === 'Retry')) {
-        let resData = await this.#getBillTransactions(partner_ref_id)
-        let billstatus = new GetJsonData().billStatus(resData.data.errorCode);
-
-        let record = await TransactionModel.saveRecordAsync({
-          bill_status: billstatus,
-          partner_ref_id: partner_ref_id,
-          response: resData.data,
-        });
-
-        await BillPaymentModel.updateDataByPartnerRefId(partner_ref_id, 'response',resData.data)
-        await BillPaymentModel.updateDataByPartnerRefId(partner_ref_id,'bill_status' , billstatus)
-        return res.json(
-          ResponseBuilder.init().withData(record).build())
-      }
-
-      else {
-        Logger.error(
-          `===BillsController::transactions -- Error:${partner_ref_id} \n`
-        );
-
-        let record = {
-          code: 4002,
-          message:
-            'Thông tin thanh toán không hợp lệ, vui lòng kiểm tra lại Mã hóa đơn & Mã dịch vụ.',
+      let billdata = await BillPaymentModel.getBillDataByPartnerRefId(partner_ref_id);
+    
+      if (billdata) {
+        let validStatuses = ['Success', 'Error', 'Pending', 'Retry'];
+        let isSuccessOrError = billdata.bill_status === 'Success' || billdata.bill_status === 'Error';
+        let isPendingOrRetry = billdata.bill_status === 'Pending' || billdata.bill_status === 'Retry';
+    
+        if (validStatuses.includes(billdata.bill_status)) {
+          if (isSuccessOrError) {
+            return res.json(ResponseBuilder.init().withData(billdata.response).build());
+          } else if (isPendingOrRetry) {
+            let resData = await this.#getBillTransactions(partner_ref_id);
+            let billstatus = new GetJsonData().billStatus(resData.data.errorCode);
+    
+            let record = await TransactionModel.saveRecordAsync({
+              bill_status: billstatus,
+              partner_ref_id: partner_ref_id,
+              response: resData.data,
+            });
+    
+            await BillPaymentModel.updateDataByPartnerRefId(partner_ref_id, 'response', resData.data);
+            await BillPaymentModel.updateDataByPartnerRefId(partner_ref_id, 'bill_status', billstatus);
+    
+            return res.json(ResponseBuilder.init().withData(record).build());
+          }
         }
-        return res.json(
-          ResponseBuilder.init().withData(record).build())
       }
-
+    
+      // Trường hợp trạng thái không hợp lệ hoặc không có dữ liệu billdata
+      Logger.error(`===BillsController::transactions -- Error:${partner_ref_id} \n`);
+      let record = {
+        code: 4002,
+        message: 'Thông tin thanh toán không hợp lệ, vui lòng kiểm tra lại Mã hóa đơn & Mã dịch vụ.',
+      }
+      return res.json(ResponseBuilder.init().withData(record).build());
     } catch (error) {
-
-      Logger.error(
-        `===BillsController::transaction -- Error checking transaction:${req.params.partner_ref_id} \n`
-      );
+      Logger.error(`===BillsController::transaction -- Error checking transaction:${req.params.partner_ref_id} \n`);
       Logger.error(error.response.data);
-
+    
       await TransactionModel.saveRecordAsync({
         bill_status: 'Error',
         partner_ref_id: req.params.partner_ref_id,
         response: error.response.data,
       });
-      return res.json(
-        ResponseBuilder.init().withData(error.response).build())
-
-    }
-  };
+      return res.json(ResponseBuilder.init().withData(error.response).build());
+    }};
 
   /**
    * Get transaction information
