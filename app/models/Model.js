@@ -52,23 +52,6 @@ class Model {
         }
     }
 
-    //update BillStatus By PartnerRefId
-    async updateBillStatusByPartnerRefId(partnerRefId, newStatus) {
-        const query = `
-          UPDATE ${this.tableName}
-          SET bill_status = $1
-          WHERE partner_ref_id = $2;
-        `;
-      
-        const values = [newStatus, partnerRefId];
-      
-        try {
-          await this.model.query(query, values);
-          console.log(`Updated bill_status for partner_ref_id ${partnerRefId} to ${newStatus}`);
-        } catch (error) {
-          console.error('Error updating bill_status:', error);
-        }
-    }
 
     //get BillData By PartnerRefId
     async getBillDataByPartnerRefId(partnerRefId) {
@@ -88,25 +71,24 @@ class Model {
           throw error;
         }
       }
-     
-      
-    // async getBillDataByBillNumber(billnumber) {
-    //   const query = `
-    //     SELECT *
-    //     FROM ${this.tableName}
-    //     WHERE bill_number = $1;
-    //   `;
+
+    //update data By PartnerRefId
+    async updateDataByPartnerRefId(partnerRefId, columns , data) {
+      const query = `
+        UPDATE ${this.tableName}
+        SET ${columns} = $1
+        WHERE partner_ref_id = $2;
+      `;
     
-    //   const values = [billnumber];
+      const values = [data, partnerRefId];
     
-    //   try {
-    //     const result = await this.model.query(query, values);
-    //     return result.rows[0];
-    //   } catch (error) {
-    //     console.error('Error retrieving bill data:', error);
-    //     throw error;
-    //   }
-    // }
+      try {
+        await this.model.query(query, values);
+        console.log(`Updated data for partner_ref_id ${partnerRefId} to ${data}`);
+      } catch (error) {
+        console.error('Error updating data:', error);
+      }
+  }
       
 }
 

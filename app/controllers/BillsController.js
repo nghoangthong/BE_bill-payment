@@ -10,6 +10,7 @@ const SignatureGenerator = require('../libraries/AppotaPay/SignatureGenerator');
 const ResponseBuilder = require('../libraries/Common/Builders/ResponseBuilder');
 const RequestValidationError = require('../libraries/Exception/RequestValidationError');
 const GetJsonData = require('../libraries/AppotaPay/GetJsonData');
+const APP_SETTINGS = require('../../config/config');
 
 class BillsController {
   /**
@@ -184,33 +185,34 @@ class BillsController {
           let typeService = new GetJsonData().getServiceCode(serviceCode)
           billDetails = JSON.stringify(bill.response.billDetail);
           let parsedBillDetails = JSON.parse(billDetails);
-          // CONFIG
-          if (typeService == 'one' && parsedBillDetails[0].amount == amount) {
-            console.log("typeService == 'one' && billDetails.amount == amount")
-            // GOP IF
-            let record = await this.#payBill({
-              billCode: billCode,
-              partnerRefId: partnerRefId,
-              serviceCode: serviceCode,
-              amount: amount,
-              billDetail: billDetails,
-            });
+          let isManyService = typeService === APP_SETTINGS.TYPESERVICE.MANY;
+          let isAmountValid = amount >= APP_SETTINGS.MIN_AMOUNT && amount <= parsedBillDetails[0].amount;
 
-            // response
-            return res.json(ResponseBuilder.init().withData(record).build());
-          } 
-          else if (typeService == 'one' && parsedBillDetails[0].amount !== amount) {
-            console.log("Kiem tra lai amount")
-            let record = {
-              code: 4002,
-              message:
-                'Số tiền thanh toán không phù hợp.',
+          if (typeService === APP_SETTINGS.TYPESERVICE.ONE) {
+            if (parsedBillDetails[0].amount === amount) {
+              console.log("typeService === 'one' && billDetails.amount === amount");
+              let record = await this.#payBill({
+                billCode: billCode,
+                partnerRefId: partnerRefId,
+                serviceCode: serviceCode,
+                amount: amount,
+                billDetail: billDetails,
+              });
+          
+              // response
+              return res.json(ResponseBuilder.init().withData(record).build());
+            } else {
+              console.log("Kiem tra lai amount");
+              let record = {
+                code: 4002,
+                message: 'Số tiền thanh toán không phù hợp.',
+              };
+              return res.json(ResponseBuilder.init().withData(record).build());
             }
-            return res.json(ResponseBuilder.init().withData(record).build());
-
           }
+          
 
-          if(typeService === 'many' && amount >= APP_SETTINGS.MIN_AMOUNT && amount <= parsedBillDetails[0].amount ) {
+          if(isManyService && isAmountValid ) {
             console.log("typeService === 'many' && parsedBillDetails[0].amount >= APP_SETTINGS.MIN_AMOUNT && parsedBillDetails[0].amount < amount")
             // let record = await this.#payBill({
             //   billCode: billCode,
@@ -229,7 +231,6 @@ class BillsController {
 
         } else {
           //3. Thông tin thanh toán không hợp lệ, throw error
-          // BO ELSE
           Logger.error(
             `===BillsController::payment -- Error while making payment for the bill:${billCode} and partnerRefId:${partnerRefId} and serviceCode:${serviceCode} \n`
           );
@@ -369,7 +370,7 @@ class BillsController {
           ResponseBuilder.init().withData(billdata.response).build()
         );
 
-      } else if (billdata && billdata.bill_status === 'Pending' || (billdata && billdata.bill_status === 'Retry')) {
+      } else if ((billdata && billdata.bill_status === 'Pending') || (billdata && billdata.bill_status === 'Retry')) {
         let resData = await this.#getBillTransactions(partner_ref_id)
         let billstatus = new GetJsonData().billStatus(resData.data.errorCode);
 
@@ -378,8 +379,9 @@ class BillsController {
           partner_ref_id: partner_ref_id,
           response: resData.data,
         });
-        // THIEU UPDATE RES
-        await BillPaymentModel.updateBillStatusByPartnerRefId(partner_ref_id, billstatus)
+
+        await BillPaymentModel.updateDataByPartnerRefId(partner_ref_id, 'response',resData.data)
+        await BillPaymentModel.updateDataByPartnerRefId(partner_ref_id,'bill_status' , billstatus)
         return res.json(
           ResponseBuilder.init().withData(record).build())
       }
