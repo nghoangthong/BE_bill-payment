@@ -51,44 +51,6 @@ class Model {
             throw error;
         }
     }
-
-
-    //get BillData By PartnerRefId
-    async getBillDataByPartnerRefId(partnerRefId) {
-        const query = `
-          SELECT *
-          FROM ${this.tableName}
-          WHERE partner_ref_id = $1;
-        `;
-      
-        const values = [partnerRefId];
-      
-        try {
-          const result = await this.model.query(query, values);
-          return result.rows[0];
-        } catch (error) {
-          console.error('Error retrieving bill data:', error);
-          throw error;
-        }
-      }
-
-    //update data By PartnerRefId
-    async updateDataByPartnerRefId(partnerRefId, columns , data) {
-      const query = `
-        UPDATE ${this.tableName}
-        SET ${columns} = $1
-        WHERE partner_ref_id = $2;
-      `;
-    
-      const values = [data, partnerRefId];
-    
-      try {
-        await this.model.query(query, values);
-        console.log(`Updated data for partner_ref_id ${partnerRefId} to ${data}`);
-      } catch (error) {
-        console.error('Error updating data:', error);
-      }
-  }
       
 }
 

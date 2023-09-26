@@ -1,8 +1,13 @@
 const fs = require('fs');
 
 class GetJsonData {
-
-     billStatus(errorCode) {
+    /**
+     * get bill status 
+     *
+     * @param errorCode
+     * @returns status from errorcode
+     */
+     getBillStatus(errorCode) {
         try {
           const rawData = fs.readFileSync(APP_SETTINGS.ERROR_FILE_PATH);
           const jsonData = JSON.parse(rawData);
@@ -27,6 +32,12 @@ class GetJsonData {
         }
       }
 
+    /**
+     * get service code 
+     *
+     * @param serviceCode
+     * @returns service type
+     */
       getServiceCode(serviceCode) {
         try {
           const rawData = fs.readFileSync(APP_SETTINGS.SERVICES_MASTER_DATA_FILE_PATH);

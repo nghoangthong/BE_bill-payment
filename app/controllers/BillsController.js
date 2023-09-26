@@ -1,5 +1,5 @@
 const BillCheckModel = require('../models/BillCheck');
-const BillPaymentModel = require('../models/Payment');
+const BillPaymentModel = require('../models/PayMent');
 const TransactionModel = require('../models/Transactions');
 const PaymentHistories = require('../models/PaymentHistories');
 const { v4: uuidv4 } = require('uuid');
@@ -151,8 +151,6 @@ class BillsController {
     let partnerRefId = req.body.partner_ref_id;
     let amount = req.body.amount;
     let billDetails = '';
-    // let billNumber = '';
-    // LET BILL
     let billData = await BillPaymentModel.getBillDataByPartnerRefId(partnerRefId)
 
     try {
@@ -225,6 +223,7 @@ class BillsController {
             }
 
         } else {
+          
           //3. Thông tin thanh toán không hợp lệ, throw error
           Logger.error(
             `===BillsController::payment -- Error while making payment for the bill:${billCode} and partnerRefId:${partnerRefId} and serviceCode:${serviceCode} \n`
@@ -318,7 +317,7 @@ class BillsController {
     );
 
     Logger.debug('BillsController::#payBill -- Response: ', resData);
-    let billstatus = new GetJsonData().billStatus(resData.data.errorCode);
+    let billstatus = new GetJsonData().getBillStatus(resData.data.errorCode);
     // persist data into table
     await PaymentHistories.saveRecordAsync({
       bill_status: billstatus,
@@ -365,7 +364,7 @@ class BillsController {
             return res.json(ResponseBuilder.init().withData(billdata.response).build());
           } else if (isPendingOrRetry) {
             let resData = await this.#getBillTransactions(partner_ref_id);
-            let billstatus = new GetJsonData().billStatus(resData.data.errorCode);
+            let billstatus = new GetJsonData().getBillStatus(resData.data.errorCode);
     
             let record = await TransactionModel.saveRecordAsync({
               bill_status: billstatus,
