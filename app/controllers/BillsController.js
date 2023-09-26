@@ -223,7 +223,7 @@ class BillsController {
             }
 
         } else {
-          
+
           //3. Thông tin thanh toán không hợp lệ, throw error
           Logger.error(
             `===BillsController::payment -- Error while making payment for the bill:${billCode} and partnerRefId:${partnerRefId} and serviceCode:${serviceCode} \n`
@@ -372,8 +372,10 @@ class BillsController {
               response: resData.data,
             });
     
-            await BillPaymentModel.updateDataByPartnerRefId(partner_ref_id, 'response', resData.data);
-            await BillPaymentModel.updateDataByPartnerRefId(partner_ref_id, 'bill_status', billstatus);
+            await BillPaymentModel.updateDataByPartnerRefId(partner_ref_id, {
+              response: resData.data,
+              bill_status: billstatus,
+            });
     
             return res.json(ResponseBuilder.init().withData(record.response).build());
           }

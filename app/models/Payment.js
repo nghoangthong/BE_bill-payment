@@ -44,18 +44,22 @@ class Payment extends Model {
    * @param partnerRefId, columns, data
    * @return result.rows[0]
    */
-  async updateDataByPartnerRefId(partnerRefId, columns, data) {
+  async updateDataByPartnerRefId(partnerRefId, updatedData) {
+    const columnValuePairs = Object.keys(updatedData).map((column, index) => {
+      return `${column} = $${index + 1}`;
+    }).join(', ');
+  
     const query = `
       UPDATE ${this.tableName}
-      SET ${columns} = $1
-      WHERE partner_ref_id = $2;
+      SET ${columnValuePairs}
+      WHERE partner_ref_id = $${Object.keys(updatedData).length + 1};
     `;
   
-    const values = [data, partnerRefId];
+    const values = [...Object.values(updatedData), partnerRefId];
   
     try {
       const result = await this.model.query(query, values);
-      Logger.debug(`function updateDataByPartnerRefId | Updated data for partner_ref_id ${partnerRefId} to ${data}`);
+      Logger.debug(`function updateDataByPartnerRefId | Updated data for partner_ref_id ${partnerRefId}`);
       
       return result.rowCount; 
     } catch (error) {
