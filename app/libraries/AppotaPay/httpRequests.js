@@ -9,7 +9,7 @@ class HTTPRequests {
    * @param jwtToken
    * @returns Json
    */
-  async fetchBillTransactionsData(partnerRefId, jwtToken) {
+  async transactionsInfoFromGetWay(partnerRefId, jwtToken) {
     const resData = await axios.get(
       APP_SETTINGS.PARTNERS.APPOTAPAY.CONNECTION.API_URI +
         APP_SETTINGS.PARTNERS.APPOTAPAY.ENDPOINTS.BILL_TRANSACTIONS.ENDPOINT +
@@ -35,7 +35,7 @@ class HTTPRequests {
    * @param jwtToken
    * @returns Json
    */
-  async fetchPayBillData(jwtToken, reqPayload) {
+  async payBillInfoFromGetWay(jwtToken, reqPayload) {
     const resData = await axios.post(
       APP_SETTINGS.PARTNERS.APPOTAPAY.CONNECTION.API_URI +
         APP_SETTINGS.PARTNERS.APPOTAPAY.ENDPOINTS.BILL_PAYMENT.ENDPOINT,
@@ -58,7 +58,7 @@ class HTTPRequests {
    * @param jwtToken
    * @returns Json
    */
-  async fetchCheckData(jwtToken, reqPayload){
+  async checkInfoFromGetWay(jwtToken, reqPayload){
     return await axios.post(
         APP_SETTINGS.PARTNERS.APPOTAPAY.CONNECTION.API_URI +
         APP_SETTINGS.PARTNERS.APPOTAPAY.ENDPOINTS.BILL_CHECK.ENDPOINT,

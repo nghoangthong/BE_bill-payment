@@ -99,7 +99,7 @@ class BillsController {
       reqPayload
     );
     
-    let resData = await HTTPRequests.fetchCheckData(jwtToken, reqPayload)
+    let resData = await HTTPRequests.checkInfoFromGetWay(jwtToken, reqPayload)
 
     Logger.debug('BillsController::#checkAvailableBill -- Response: ', resData);
     let data = {
@@ -260,7 +260,7 @@ class BillsController {
     );
 
     // send POST request to AppotaPay
-    let resData = await HTTPRequests.fetchPayBillData(jwtToken, reqPayload)
+    let resData = await HTTPRequests.payBillInfoFromGetWay(jwtToken, reqPayload)
 
     Logger.debug('BillsController::#payBill -- Response: ', resData);
     let billstatus = new GetJsonData().getBillStatus(resData.data.errorCode);
@@ -354,7 +354,7 @@ class BillsController {
 
   async #getBillTransactions(partnerRefId) {
     let jwtToken = new JWTGenerator().generate();
-    return HTTPRequests.fetchBillTransactionsData(partnerRefId, jwtToken)
+    return HTTPRequests.transactionsInfoFromGetWay(partnerRefId, jwtToken)
   }
 
 
