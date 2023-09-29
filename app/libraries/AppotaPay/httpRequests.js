@@ -5,8 +5,8 @@ class HTTPRequests {
     /**
    * fetch Bill Transactions Data
    *
-   * @param partnerRefId
-   * @param jwtToken
+   * @param string partnerRefId
+   * @param string jwtToken
    * @returns Json
    */
   async transactionsInfoFromGetWay(partnerRefId, jwtToken) {
@@ -31,8 +31,8 @@ class HTTPRequests {
     /**
    * fetch Pay Bill Data
    *
-   * @param reqPayload
-   * @param jwtToken
+   * @param sting reqPayload
+   * @param string jwtToken
    * @returns Json
    */
   async payBillInfoFromGetWay(jwtToken, reqPayload) {
@@ -54,8 +54,8 @@ class HTTPRequests {
     /**
    * fetch Check Data
    *
-   * @param reqPayload
-   * @param jwtToken
+   * @param string reqPayload
+   * @param string jwtToken
    * @returns Json
    */
   async checkInfoFromGetWay(jwtToken, reqPayload){

@@ -28,10 +28,13 @@ class Model {
             let query = `SELECT ${selectString} FROM ${this.tableName} WHERE ${key} = $1`;
 
             let result = await this.model.query(query, [value]);
-            return result.rows[0];
+            if (result.rows.length > 0) {
+                return result.rows[0];
+              }
+            return false;
         } catch (error) {
-
-            throw error;
+            Logger.error('function getRecordByPrimaryKeyAsync | error:',error)
+            return false;
         }
     }
 
@@ -47,7 +50,10 @@ class Model {
             const query = `INSERT INTO ${this.tableName}(${text}) VALUES(${valuesPattern}) RETURNING *`;
 
             const result = await this.model.query(query, values);
-            return result.rows[0];
+            if (result.rows.length > 0) {
+                return result.rows[0];
+              }
+            return false;
         } catch (error) {
             Logger.error('function saveRecordAsync | error:', error)
             return false

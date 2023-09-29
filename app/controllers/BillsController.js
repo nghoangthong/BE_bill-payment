@@ -3,15 +3,14 @@ const BillPaymentModel = require('../models/PayMent');
 const TransactionModel = require('../models/Transactions');
 const PaymentHistories = require('../models/PaymentHistories');
 const { v4: uuidv4 } = require('uuid');
-const axios = require('axios');
 
 const JWTGenerator = require('../libraries/AppotaPay/JWTGenerator');
 const SignatureGenerator = require('../libraries/AppotaPay/SignatureGenerator');
 const ResponseBuilder = require('../libraries/Common/Builders/ResponseBuilder');
 const RequestValidationError = require('../libraries/Exception/RequestValidationError');
 const GetJsonData = require('../libraries/AppotaPay/GetJsonData');
-const APP_SETTINGS = require('../../config/config');
 const HTTPRequests = require('../libraries/AppotaPay/httpRequests')
+const CONSTANT = require('../../config/constant')
 
 class BillsController {
   /**
@@ -28,7 +27,7 @@ class BillsController {
    * @param req
    * @param res
    * @param next
-   * @returns {Promise<void>}
+   * @returns Json
    */
   check = async (req, res, next) => {
     let billCode = req.body.billcode;
@@ -87,7 +86,7 @@ class BillsController {
    * Private function: to check available bill for the given billCode
    *
    * @param reqPayload
-   * @returns {Promise<*>}
+   * @returns object
    */
   async #checkAvailableBill(reqPayload) {
     let jwtToken = new JWTGenerator().generate();
@@ -118,7 +117,7 @@ class BillsController {
    * @param req
    * @param res
    * @param next
-   * @returns {Promise<*>}
+   * @returns Json
    */
   payment = async (req, res, next) => {
     let billCode = req.body.billcode;
@@ -136,7 +135,7 @@ class BillsController {
 
       } else {
         Logger.debug(
-          `\n\nBillsController::payment -- Lookup Bill by billCode:${billCode} serviceCode:${serviceCode} partnerRefId:${partnerRefId}\n`
+          `BillsController::payment -- Lookup Bill by billCode:${billCode} serviceCode:${serviceCode} partnerRefId:${partnerRefId}`
         );
         let bill = await BillCheckModel.getBillDetailsAsync(
           billCode,
@@ -147,16 +146,14 @@ class BillsController {
 
         if (bill && bill.response.errorCode === 0) {
           Logger.debug(
-            `BillsController::payment -- Bill does exist, so pay the bill...\n`
+            `BillsController::payment -- Bill does exist, so pay the bill...`
           );
 
-          let typeService = new GetJsonData().getServiceCode(serviceCode)
+          let typeService = new GetJsonData().getServiceCode(serviceCode);
           billDetails = JSON.stringify(bill.response.billDetail);
           let parsedBillDetails = JSON.parse(billDetails);
-          let isManyService = typeService === APP_SETTINGS.BILL_DETAIL.TYPE_SERVICE.MANY;
-          let isAmountValid = amount >= APP_SETTINGS.BILL_DETAIL.MIN_AMOUNT && amount <= parsedBillDetails[0].amount;
 
-          if (typeService === APP_SETTINGS.BILL_DETAIL.TYPE_SERVICE.ONE) {
+          if (typeService == CONSTANT.BILL_DETAIL.TYPE_SERVICE.ONE) {
             if (parsedBillDetails[0].amount === amount) {
               let data = {
                 billCode: billCode,
@@ -168,7 +165,9 @@ class BillsController {
               let record = await this.#payBill(data);
               // response
               return res.json(ResponseBuilder.init().withData(record.response).build());
-            } else {
+            }
+             
+            else {
               let record = {
                 code: 4002,
                 message: 'Số tiền thanh toán không phù hợp.',
@@ -176,7 +175,8 @@ class BillsController {
               return res.json(ResponseBuilder.init().withData(record).build());
             }
           }
-          
+          let isManyService = typeService === CONSTANT.BILL_DETAIL.TYPE_SERVICE.MANY;
+          let isAmountValid = amount >= CONSTANT.BILL_DETAIL.MIN_AMOUNT && amount <= parsedBillDetails[0].amount;
           if(isManyService && isAmountValid ) {
             // let record = await this.#payBill({
             //   billCode: billCode,
@@ -217,7 +217,7 @@ class BillsController {
       Logger.error(error);
       Logger.error(error.response.data);
       let data = {
-        bill_status: APP_SETTINGS.BILL_DETAIL.BILL_STATUS.ERROR,
+        bill_status: CONSTANT.BILL_DETAIL.BILL_STATUS.ERROR,
         billCode: billCode ? billCode : '',
         partner_ref_id: partnerRefId ? partnerRefId : '',
         service_code: serviceCode ? serviceCode : '',
@@ -245,7 +245,7 @@ class BillsController {
    * Make a request to pay the bill to AppotaPay
    *
    * @param reqPayload
-   * @returns {Promise<*>}
+   * @returns object
    */
   async #payBill(reqPayload) {
     // prepare jwt token
@@ -286,24 +286,24 @@ class BillsController {
    *
    * @param req
    * @param res
-   * @returns {Promise<void>}
+   * @returns Json
    */
 
   transactions = async (req, res) => {
     try {
       let partner_ref_id = req.params.partner_ref_id;
       let billdata = await BillPaymentModel.getBillDataByPartnerRefId(partner_ref_id);
-    
       if (billdata) {
-        let validStatuses = [APP_SETTINGS.BILL_DETAIL.BILL_STATUS.SUCCESS,
-          APP_SETTINGS.BILL_DETAIL.BILL_STATUS.ERROR,
-          APP_SETTINGS.BILL_DETAIL.BILL_STATUS.PENDING,
-          APP_SETTINGS.BILL_DETAIL.BILL_STATUS.RETRY];
+        let validStatuses = [CONSTANT.BILL_DETAIL.BILL_STATUS.SUCCESS,
+          CONSTANT.BILL_DETAIL.BILL_STATUS.ERROR,
+          CONSTANT.BILL_DETAIL.BILL_STATUS.PENDING,
+          CONSTANT.BILL_DETAIL.BILL_STATUS.RETRY];
+        
 
-        let isSuccessStatus = billdata.bill_status === APP_SETTINGS.BILL_DETAIL.BILL_STATUS.SUCCESS;
-        let isErrorStatus = billdata.bill_status === APP_SETTINGS.BILL_DETAIL.BILL_STATUS.ERROR;
-        let isPendingStatus = billdata.bill_status === APP_SETTINGS.BILL_DETAIL.BILL_STATUS.PENDING;
-        let isRetryStatus =  billdata.bill_status === APP_SETTINGS.BILL_DETAIL.BILL_STATUS.RETRY;
+        let isSuccessStatus = billdata.bill_status === CONSTANT.BILL_DETAIL.BILL_STATUS.SUCCESS;
+        let isErrorStatus = billdata.bill_status === CONSTANT.BILL_DETAIL.BILL_STATUS.ERROR;
+        let isPendingStatus = billdata.bill_status === CONSTANT.BILL_DETAIL.BILL_STATUS.PENDING;
+        let isRetryStatus =  billdata.bill_status === CONSTANT.BILL_DETAIL.BILL_STATUS.RETRY;
     
         if (validStatuses.includes(billdata.bill_status)) {
           if (isSuccessStatus || isErrorStatus) {
@@ -340,7 +340,7 @@ class BillsController {
       Logger.error(error.response.data);
     
       await TransactionModel.saveRecordAsync({
-        bill_status: APP_SETTINGS.BILL_DETAIL.BILL_STATUS.ERROR,
+        bill_status: CONSTANT.BILL_DETAIL.BILL_STATUS.ERROR,
         partner_ref_id: req.params.partner_ref_id,
         response: error.response.data,
       });
@@ -350,6 +350,7 @@ class BillsController {
   /**
    * Get transaction information
    * @param partnerRefId
+   * return object
    */
 
   async #getBillTransactions(partnerRefId) {

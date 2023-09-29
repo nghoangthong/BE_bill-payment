@@ -12,7 +12,7 @@ class BillCheck extends Model {
    * Lookup the bill by bill code
    *
    * @param billCode
-   * @returns {Promise<*>}
+   * @returns object
    */
   async getBillByBillCodeAsync(billCode) {
     let sql = `SELECT * FROM ${this.tableName} WHERE billcode = $1 AND created_at >= NOW() - INTERVAL '30 minutes'`;
@@ -20,18 +20,17 @@ class BillCheck extends Model {
 
     if (result.rows.length > 0) {
       return result.rows[0];
-    } else {
-      return false;
     }
+    return false;
   }
 
   /**
    * Get Bill details by bill code, service code and partner reference id
    *
-   * @param billCode
-   * @param serviceCode
-   * @param partnerRefId
-   * @returns {Promise<*>}
+   * @param sting billCode
+   * @param string serviceCode
+   * @param string partnerRefId
+   * @returns object
    */
   async getBillDetailsAsync(billCode, serviceCode, partnerRefId) {
     let sql = `SELECT * FROM ${this.tableName} WHERE billcode = $1 AND service_code = $2 AND partner_ref_id = $3`;
@@ -43,9 +42,8 @@ class BillCheck extends Model {
 
     if (result.rows.length > 0) {
       return result.rows[0];
-    } else {
-      return false;
     }
+    return false;
   }
 }
 

@@ -3,7 +3,7 @@ const jws = require('jws');
 class JWTGenerator {
     /**
      * Generate Json web signature
-     * @returns {*}
+     * @returns string
      */
     generate() {
         let currentTime = Math.floor(Date.now() / 1000);

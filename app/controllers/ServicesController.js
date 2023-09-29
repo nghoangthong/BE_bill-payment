@@ -16,7 +16,7 @@ class ServicesController {
      * @param req
      * @param res
      * @param next
-     * @returns {*}
+     * @returns Json
      */
     serviceCategories = (req, res, next) => {
         try {
@@ -38,7 +38,7 @@ class ServicesController {
      * @param req
      * @param res
      * @param next
-     * @returns {*}
+     * @returns Json
      */
     services = (req, res, next) => {
         try {
@@ -64,7 +64,7 @@ class ServicesController {
     /**
      * Read masterdata
      *
-     * @returns {any}
+     * @returns Json
      */
     #readBillServices() {
         try {

@@ -28,12 +28,11 @@ class Payment extends Model {
       const result = await this.model.query(query, values);
       if (result.rows.length > 0) {
         return result.rows[0];
-      } else {
-        return false;
       }
+      return false;
     } catch (error) {
       Logger.error("function getBillDataByPartnerRefId | Error retrieving bill data:", error);
-      throw error;
+      return false;
     }
   }
   
