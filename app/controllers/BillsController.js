@@ -11,6 +11,7 @@ const ResponseBuilder = require('../libraries/Common/Builders/ResponseBuilder');
 const RequestValidationError = require('../libraries/Exception/RequestValidationError');
 const GetJsonData = require('../libraries/AppotaPay/GetJsonData');
 const APP_SETTINGS = require('../../config/config');
+const HTTPRequests = require('../libraries/AppotaPay/httpRequests')
 
 class BillsController {
   /**
@@ -35,48 +36,35 @@ class BillsController {
     let partnerRefId = uuidv4();
 
     try {
-      // TODO: define a master data to provide the service codes to mobile app
-      // TODO: Mobile app needs to pass the service code that depends on the value that user selected to pay the bill
-
-      /**
-       * Step 2: lookup Bill Code on DB
-       */
       Logger.debug(
         `\n\nBillsController::check -- Lookup Bill by Bill Code ${billCode}\n`
       );
-      // 1. Lấy billCode từ request của Client App & check nếu Bill Code có dưới DB & vẫn còn thời gian chưa expired trong X phút kể từ thời điểm hiện tại.
       let bill = await BillCheckModel.getBillByBillCodeAsync(billCode);
       Logger.debug('BillsController::check -- Result: ', bill);
 
       if (bill) {
-        // Bill has been checked last moment then response to client app
-        // 2. Nếu billCode có giá trị, trả về cho Client App.
+
         return res.json(ResponseBuilder.init().withData(bill).build());
-      } else {
-        //3. Nếu billCode không có giá trị thì gọi lên AppotaPay để check Bill, sau đó lưu lại thông tin đã check xuống DB  và trả về response cho Client App.
-        Logger.debug(
-          `BillsController::check -- Bill does not exist, checking with AppotaPay...\n`
-        );
-
-        let record = await this.#checkAvailableBill({
-          // the bill number that user inputs
-          billCode: billCode,
-          // the unique id for reference
-          partnerRefId: partnerRefId,
-          // service code
-          serviceCode: serviceCode,
-        });
-
-        // response
-        return res.json(ResponseBuilder.init().withData(record).build());
       }
+      Logger.debug(
+        `BillsController::check -- Bill does not exist, checking with AppotaPay...\n`
+      );
+
+      let record = await this.#checkAvailableBill({
+        billCode: billCode,
+        partnerRefId: partnerRefId,
+        serviceCode: serviceCode,
+      });
+
+      // response
+      return res.json(ResponseBuilder.init().withData(record).build());
+      
     } catch (error) {
       Logger.error(
         `===BillsController::check -- Error while checking the bill:${billCode} and partnerRefId:${partnerRefId} and serviceCode:${serviceCode} \n`
       );
       Logger.error(error);
-
-      await BillCheckModel.saveRecordAsync({
+      let data = {
         billCode: billCode ? billCode : '',
         partner_ref_id: partnerRefId ? partnerRefId : '',
         service_code: serviceCode ? serviceCode : '',
@@ -88,7 +76,8 @@ class BillsController {
               message: error.response.data,
               errorCode: error.response.status,
             },
-      });
+      }
+      await BillCheckModel.saveRecordAsync(data);
 
       next(error);
     }
@@ -101,40 +90,26 @@ class BillsController {
    * @returns {Promise<*>}
    */
   async #checkAvailableBill(reqPayload) {
-    // prepare jwt token
     let jwtToken = new JWTGenerator().generate();
 
-    // assign signature into payload
     reqPayload.signature = new SignatureGenerator().generate(reqPayload);
 
     Logger.debug(
       'BillsController::#checkAvailableBill -- Procedure a bill check with payload ',
       reqPayload
     );
-
-    // send POST request to AppotaPay
-    let resData = await axios.post(
-      APP_SETTINGS.PARTNERS.APPOTAPAY.CONNECTION.API_URI +
-      APP_SETTINGS.PARTNERS.APPOTAPAY.ENDPOINTS.BILL_CHECK.ENDPOINT,
-      reqPayload,
-      {
-        headers: {
-          'X-APPOTAPAY-AUTH': `${APP_SETTINGS.PARTNERS.APPOTAPAY.HEADERS.AUTH_HEADER_SCHEME} ${jwtToken}`,
-          'Content-Type':
-            APP_SETTINGS.PARTNERS.APPOTAPAY.HEADERS.AUTH_HEADER_CONTENT_TYPE,
-        },
-      }
-    );
+    
+    let resData = await HTTPRequests.fetchCheckData(jwtToken, reqPayload)
 
     Logger.debug('BillsController::#checkAvailableBill -- Response: ', resData);
-
-    // persist data into table
-    return await BillCheckModel.saveRecordAsync({
+    let data = {
       billcode: reqPayload.billCode,
       partner_ref_id: reqPayload.partnerRefId,
       service_code: reqPayload.serviceCode,
       response: resData.data,
-    });
+    }
+    // persist data into table
+    return await BillCheckModel.saveRecordAsync(data);
   }
 
   /**
@@ -154,12 +129,7 @@ class BillsController {
     let billData = await BillPaymentModel.getBillDataByPartnerRefId(partnerRefId)
 
     try {
-      // TODO: define a master data to provide the service codes to mobile app
-      // TODO: Mobile app needs to pass the service code that depends on the value that user selected to pay the bill
 
-      /**
-       * Step 2: check if bill code exists
-       */
       if (billData) {
 
         return res.json(ResponseBuilder.init().withData(billData.response).build());
@@ -183,18 +153,19 @@ class BillsController {
           let typeService = new GetJsonData().getServiceCode(serviceCode)
           billDetails = JSON.stringify(bill.response.billDetail);
           let parsedBillDetails = JSON.parse(billDetails);
-          let isManyService = typeService === APP_SETTINGS.TYPESERVICE.MANY;
-          let isAmountValid = amount >= APP_SETTINGS.MIN_AMOUNT && amount <= parsedBillDetails[0].amount;
+          let isManyService = typeService === APP_SETTINGS.BILL_DETAIL.TYPE_SERVICE.MANY;
+          let isAmountValid = amount >= APP_SETTINGS.BILL_DETAIL.MIN_AMOUNT && amount <= parsedBillDetails[0].amount;
 
-          if (typeService === APP_SETTINGS.TYPESERVICE.ONE) {
+          if (typeService === APP_SETTINGS.BILL_DETAIL.TYPE_SERVICE.ONE) {
             if (parsedBillDetails[0].amount === amount) {
-              let record = await this.#payBill({
+              let data = {
                 billCode: billCode,
                 partnerRefId: partnerRefId,
                 serviceCode: serviceCode,
                 amount: amount,
                 billDetail: billDetails,
-              });
+              }
+              let record = await this.#payBill(data);
               // response
               return res.json(ResponseBuilder.init().withData(record.response).build());
             } else {
@@ -245,9 +216,8 @@ class BillsController {
       );
       Logger.error(error);
       Logger.error(error.response.data);
-
-      await PaymentHistories.saveRecordAsync({
-        bill_status: 'Error',
+      let data = {
+        bill_status: APP_SETTINGS.BILL_DETAIL.BILL_STATUS.ERROR,
         billCode: billCode ? billCode : '',
         partner_ref_id: partnerRefId ? partnerRefId : '',
         service_code: serviceCode ? serviceCode : '',
@@ -261,24 +231,11 @@ class BillsController {
               message: error.response.data,
               errorCode: error.response.status,
             },
-      });
+      }
 
-      await BillPaymentModel.saveRecordAsync({
-        bill_status: 'Error',
-        billCode: billCode ? billCode : '',
-        partner_ref_id: partnerRefId ? partnerRefId : '',
-        service_code: serviceCode ? serviceCode : '',
-        amount: amount ? amount : 0,
-        bill_details: billDetails,
-        response:
-          Object.prototype.toString.call(error.response.data) ===
-            '[object Object]'
-            ? error.response.data
-            : {
-              message: error.response.data,
-              errorCode: error.response.status,
-            },
-      });
+      await PaymentHistories.saveRecordAsync(data);
+      await BillPaymentModel.saveRecordAsync(data);
+
       next(error);
     }
   };
@@ -303,23 +260,12 @@ class BillsController {
     );
 
     // send POST request to AppotaPay
-    let resData = await axios.post(
-      APP_SETTINGS.PARTNERS.APPOTAPAY.CONNECTION.API_URI +
-      APP_SETTINGS.PARTNERS.APPOTAPAY.ENDPOINTS.BILL_PAYMENT.ENDPOINT,
-      reqPayload,
-      {
-        headers: {
-          'X-APPOTAPAY-AUTH': `${APP_SETTINGS.PARTNERS.APPOTAPAY.HEADERS.AUTH_HEADER_SCHEME} ${jwtToken}`,
-          'Content-Type':
-            APP_SETTINGS.PARTNERS.APPOTAPAY.HEADERS.AUTH_HEADER_CONTENT_TYPE,
-        },
-      }
-    );
+    let resData = await HTTPRequests.fetchPayBillData(jwtToken, reqPayload)
 
     Logger.debug('BillsController::#payBill -- Response: ', resData);
     let billstatus = new GetJsonData().getBillStatus(resData.data.errorCode);
     // persist data into table
-    await PaymentHistories.saveRecordAsync({
+     let data = {
       bill_status: billstatus,
       billcode: reqPayload.billCode,
       partner_ref_id: reqPayload.partnerRefId,
@@ -327,17 +273,11 @@ class BillsController {
       amount: reqPayload.amount,
       bill_details: reqPayload.billDetail,
       response: resData.data,
-    });
+    } 
 
-    return await BillPaymentModel.saveRecordAsync({
-      bill_status: billstatus,
-      billcode: reqPayload.billCode,
-      partner_ref_id: reqPayload.partnerRefId,
-      service_code: reqPayload.serviceCode,
-      amount: reqPayload.amount,
-      bill_details: reqPayload.billDetail,
-      response: resData.data,
-    });
+    await PaymentHistories.saveRecordAsync(data);
+
+    return await BillPaymentModel.saveRecordAsync(data);
   }
 
 
@@ -355,14 +295,21 @@ class BillsController {
       let billdata = await BillPaymentModel.getBillDataByPartnerRefId(partner_ref_id);
     
       if (billdata) {
-        let validStatuses = ['Success', 'Error', 'Pending', 'Retry'];
-        let isSuccessOrError = billdata.bill_status === 'Success' || billdata.bill_status === 'Error';
-        let isPendingOrRetry = billdata.bill_status === 'Pending' || billdata.bill_status === 'Retry';
+        let validStatuses = [APP_SETTINGS.BILL_DETAIL.BILL_STATUS.SUCCESS,
+          APP_SETTINGS.BILL_DETAIL.BILL_STATUS.ERROR,
+          APP_SETTINGS.BILL_DETAIL.BILL_STATUS.PENDING,
+          APP_SETTINGS.BILL_DETAIL.BILL_STATUS.RETRY];
+
+        let isSuccessStatus = billdata.bill_status === APP_SETTINGS.BILL_DETAIL.BILL_STATUS.SUCCESS;
+        let isErrorStatus = billdata.bill_status === APP_SETTINGS.BILL_DETAIL.BILL_STATUS.ERROR;
+        let isPendingStatus = billdata.bill_status === APP_SETTINGS.BILL_DETAIL.BILL_STATUS.PENDING;
+        let isRetryStatus =  billdata.bill_status === APP_SETTINGS.BILL_DETAIL.BILL_STATUS.RETRY;
     
         if (validStatuses.includes(billdata.bill_status)) {
-          if (isSuccessOrError) {
+          if (isSuccessStatus || isErrorStatus) {
             return res.json(ResponseBuilder.init().withData(billdata.response).build());
-          } else if (isPendingOrRetry) {
+          } 
+          if (isPendingStatus || isRetryStatus) {
             let resData = await this.#getBillTransactions(partner_ref_id);
             let billstatus = new GetJsonData().getBillStatus(resData.data.errorCode);
     
@@ -393,7 +340,7 @@ class BillsController {
       Logger.error(error.response.data);
     
       await TransactionModel.saveRecordAsync({
-        bill_status: 'Error',
+        bill_status: APP_SETTINGS.BILL_DETAIL.BILL_STATUS.ERROR,
         partner_ref_id: req.params.partner_ref_id,
         response: error.response.data,
       });
@@ -404,27 +351,10 @@ class BillsController {
    * Get transaction information
    * @param partnerRefId
    */
-  // get transaction status 
+
   async #getBillTransactions(partnerRefId) {
     let jwtToken = new JWTGenerator().generate();
-    const headers = {
-      'X-APPOTAPAY-AUTH': `Bearer ${jwtToken}`,
-      'Content-Type': 'application/json',
-    };
-
-    const resData = await axios.get(
-      APP_SETTINGS.PARTNERS.APPOTAPAY.CONNECTION.API_URI +
-      APP_SETTINGS.PARTNERS.APPOTAPAY.ENDPOINTS.BILL_TRANSACTIONS
-        .ENDPOINT +
-      partnerRefId,
-      {
-        params: {
-          partner_ref_id: partnerRefId,
-        },
-        headers: headers,
-      }
-    );
-    return resData
+    return HTTPRequests.fetchBillTransactionsData(partnerRefId, jwtToken)
   }
 
 

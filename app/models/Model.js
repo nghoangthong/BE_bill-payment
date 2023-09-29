@@ -30,6 +30,7 @@ class Model {
             let result = await this.model.query(query, [value]);
             return result.rows[0];
         } catch (error) {
+
             throw error;
         }
     }
@@ -48,7 +49,8 @@ class Model {
             const result = await this.model.query(query, values);
             return result.rows[0];
         } catch (error) {
-            throw error;
+            Logger.error('function saveRecordAsync | error:', error)
+            return false
         }
     }
       

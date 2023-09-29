@@ -29,7 +29,7 @@ class Payment extends Model {
       if (result.rows.length > 0) {
         return result.rows[0];
       } else {
-        return null;
+        return false;
       }
     } catch (error) {
       Logger.error("function getBillDataByPartnerRefId | Error retrieving bill data:", error);
@@ -64,7 +64,7 @@ class Payment extends Model {
       return result.rowCount; 
     } catch (error) {
       Logger.error(" function updateDataByPartnerRefId | Error updating data:", error);
-      return 0; 
+      return false
     }
   }
   
