@@ -58,6 +58,7 @@ const CONSTANT = {
       PENDING: "Pending",
     },
     UNKNOWN: "unknown",
+    BILL_CHECKING_TIME : "30 minutes"
   },
 };
 

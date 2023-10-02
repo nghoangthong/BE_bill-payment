@@ -42,7 +42,6 @@ class BillsController {
       Logger.debug('BillsController::check -- Result: ', bill);
 
       if (bill) {
-
         return res.json(ResponseBuilder.init().withData(bill).build());
       }
       Logger.debug(
@@ -77,7 +76,6 @@ class BillsController {
             },
       }
       await BillCheckModel.saveRecordAsync(data);
-
       next(error);
     }
   };
@@ -90,7 +88,6 @@ class BillsController {
    */
   async #checkAvailableBill(reqPayload) {
     let jwtToken = new JWTGenerator().generate();
-
     reqPayload.signature = new SignatureGenerator().generate(reqPayload);
 
     Logger.debug(
@@ -130,85 +127,79 @@ class BillsController {
     try {
 
       if (billData) {
-
         return res.json(ResponseBuilder.init().withData(billData.response).build());
 
-      } else {
-        Logger.debug(
-          `BillsController::payment -- Lookup Bill by billCode:${billCode} serviceCode:${serviceCode} partnerRefId:${partnerRefId}`
-        );
-        let bill = await BillCheckModel.getBillDetailsAsync(
-          billCode,
-          serviceCode,
-          partnerRefId
-        );
-        Logger.debug('BillsController::payment -- Result: ', bill);
-
-        if (bill && bill.response.errorCode === 0) {
-          Logger.debug(
-            `BillsController::payment -- Bill does exist, so pay the bill...`
-          );
-
-          let typeService = new GetJsonData().getServiceCode(serviceCode);
-          billDetails = JSON.stringify(bill.response.billDetail);
-          let parsedBillDetails = JSON.parse(billDetails);
-
-          if (typeService == CONSTANT.BILL_DETAIL.TYPE_SERVICE.ONE) {
-            if (parsedBillDetails[0].amount === amount) {
-              let data = {
-                billCode: billCode,
-                partnerRefId: partnerRefId,
-                serviceCode: serviceCode,
-                amount: amount,
-                billDetail: billDetails,
-              }
-              let record = await this.#payBill(data);
-              // response
-              return res.json(ResponseBuilder.init().withData(record.response).build());
-            }
-             
-            else {
-              let record = {
-                code: 4002,
-                message: 'Số tiền thanh toán không phù hợp.',
-              };
-              return res.json(ResponseBuilder.init().withData(record).build());
-            }
-          }
-          let isManyService = typeService === CONSTANT.BILL_DETAIL.TYPE_SERVICE.MANY;
-          let isAmountValid = amount >= CONSTANT.BILL_DETAIL.MIN_AMOUNT && amount <= parsedBillDetails[0].amount;
-          if(isManyService && isAmountValid ) {
-            // let record = await this.#payBill({
-            //   billCode: billCode,
-            //   partnerRefId: partnerRefId,
-            //   serviceCode: serviceCode,
-            //   amount: amount,
-            //   billDetail: billDetails,
-            // });
-            // return res.json(ResponseBuilder.init().withData(record).build());
-            return res.json(ResponseBuilder.init().withData({
-              code: 4002,
-              message:
-                'thanh toán nhiều lần.',
-            }).build());
-            }
-
-        } else {
-
-          //3. Thông tin thanh toán không hợp lệ, throw error
-          Logger.error(
-            `===BillsController::payment -- Error while making payment for the bill:${billCode} and partnerRefId:${partnerRefId} and serviceCode:${serviceCode} \n`
-          );
-          next(
-            new RequestValidationError({
-              code: 4002,
-              message:
-                'Thông tin thanh toán không hợp lệ, vui lòng kiểm tra lại Mã hóa đơn & Mã dịch vụ.',
-            })
-          );
-        }
       }
-      //end if else
+      Logger.debug(
+        `BillsController::payment -- Lookup Bill by billCode:${billCode} serviceCode:${serviceCode} partnerRefId:${partnerRefId}`
+      );
+      let bill = await BillCheckModel.getBillDetailsAsync(
+        billCode,
+        serviceCode,
+        partnerRefId
+      );
+      Logger.debug('BillsController::payment -- Result: ', bill);
+
+      if (bill && bill.response.errorCode === 0) {
+        Logger.debug(
+          `BillsController::payment -- Bill does exist, so pay the bill...`
+        );
+
+        let typeService = new GetJsonData().getServiceCode(serviceCode);
+        billDetails = JSON.stringify(bill.response.billDetail);
+        let parsedBillDetails = JSON.parse(billDetails);
+
+        if (typeService == CONSTANT.BILL_DETAIL.TYPE_SERVICE.ONE) {
+          if (parsedBillDetails[0].amount === amount) {
+            let data = {
+              billCode: billCode,
+              partnerRefId: partnerRefId,
+              serviceCode: serviceCode,
+              amount: amount,
+              billDetail: billDetails,
+            };
+            let record = await this.#payBill(data);
+            // response
+            return res.json(ResponseBuilder.init().withData(record.response).build());
+          }
+          
+          let record = {
+            code: 4002,
+            message: 'Số tiền thanh toán không phù hợp.',
+          };
+          return res.json(ResponseBuilder.init().withData(record).build());
+        };
+        };
+        let isManyService = typeService === CONSTANT.BILL_DETAIL.TYPE_SERVICE.MANY;
+        let isAmountValid = amount >= CONSTANT.BILL_DETAIL.MIN_AMOUNT && amount <= parsedBillDetails[0].amount;
+        if(isManyService && isAmountValid ) {
+          // let record = await this.#payBill({
+          //   billCode: billCode,
+          //   partnerRefId: partnerRefId,
+          //   serviceCode: serviceCode,
+          //   amount: amount,
+          //   billDetail: billDetails,
+          // });
+          // return res.json(ResponseBuilder.init().withData(record).build());
+          return res.json(ResponseBuilder.init().withData({
+            code: 4002,
+            message:
+              'thanh toán nhiều lần.',
+          }).build());
+
+      } else {
+        //3. Thông tin thanh toán không hợp lệ, throw error
+        Logger.error(
+          `===BillsController::payment -- Error while making payment for the bill:${billCode} and partnerRefId:${partnerRefId} and serviceCode:${serviceCode} \n`
+        );
+        next(
+          new RequestValidationError({
+            code: 4002,
+            message:
+              'Thông tin thanh toán không hợp lệ, vui lòng kiểm tra lại Mã hóa đơn & Mã dịch vụ.',
+          })
+        );
+      }
 
     } catch (error) {
       Logger.error(
@@ -261,9 +252,10 @@ class BillsController {
 
     // send POST request to AppotaPay
     let resData = await HTTPRequests.payBillInfoFromGetWay(jwtToken, reqPayload)
+    let billstatus = new GetJsonData().getBillStatus(resData.data.errorCode);
 
     Logger.debug('BillsController::#payBill -- Response: ', resData);
-    let billstatus = new GetJsonData().getBillStatus(resData.data.errorCode);
+
     // persist data into table
      let data = {
       bill_status: billstatus,
@@ -299,7 +291,6 @@ class BillsController {
           CONSTANT.BILL_DETAIL.BILL_STATUS.PENDING,
           CONSTANT.BILL_DETAIL.BILL_STATUS.RETRY];
         
-
         let isSuccessStatus = billdata.bill_status === CONSTANT.BILL_DETAIL.BILL_STATUS.SUCCESS;
         let isErrorStatus = billdata.bill_status === CONSTANT.BILL_DETAIL.BILL_STATUS.ERROR;
         let isPendingStatus = billdata.bill_status === CONSTANT.BILL_DETAIL.BILL_STATUS.PENDING;
@@ -356,9 +347,9 @@ class BillsController {
   async #getBillTransactions(partnerRefId) {
     let jwtToken = new JWTGenerator().generate();
     return HTTPRequests.transactionsInfoFromGetWay(partnerRefId, jwtToken)
-  }
+  };
 
 
-}
+};
 
 module.exports = new BillsController();

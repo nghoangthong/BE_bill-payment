@@ -1,6 +1,6 @@
 const { json } = require("body-parser");
 const fs = require("fs");
-const CONSTANT = require('../../../config/constant')
+const CONSTANT = require("../../../config/constant");
 
 class GetJsonData {
   /**
@@ -13,26 +13,34 @@ class GetJsonData {
     try {
       const rawData = fs.readFileSync(APP_SETTINGS.ERROR_FILE_PATH);
       const jsonData = JSON.parse(rawData);
-      if (jsonData.Error && jsonData.Error[errorCode]) {
+  
+      let billStatusError = jsonData.Error && jsonData.Error[errorCode];
+      if (billStatusError) {
         return CONSTANT.BILL_DETAIL.BILL_STATUS.ERROR;
       }
-
-      if (jsonData.Success && jsonData.Success[errorCode]) {
+  
+      let billStatusSuccess = jsonData.Success && jsonData.Success[errorCode];
+      if (billStatusSuccess) {
         return CONSTANT.BILL_DETAIL.BILL_STATUS.SUCCESS;
       }
-      if (jsonData.Retry && jsonData.Retry[errorCode]) {
+  
+      let billStatusRetry = jsonData.Retry && jsonData.Retry[errorCode];
+      if (billStatusRetry) {
         return CONSTANT.BILL_DETAIL.BILL_STATUS.RETRY;
       }
-      if (jsonData.Pending && jsonData.Pending[errorCode]) {
+  
+      let billStatusPending = jsonData.Pending && jsonData.Pending[errorCode];
+      if (billStatusPending) {
         return CONSTANT.BILL_DETAIL.BILL_STATUS.PENDING;
       }
-
+  
       return CONSTANT.BILL_DETAIL.UNKNOWN;
     } catch (error) {
       Logger.error("function getBillStatus | error:", error);
       return false;
     }
   }
+  
 
   /**
    * get service code
@@ -53,26 +61,33 @@ class GetJsonData {
         CONSTANT.BILL_DETAIL.SERVICE_CODE.BILL_INTERNET,
         CONSTANT.BILL_DETAIL.SERVICE_CODE.BILL_TELEPHONE,
       ];
-
+  
       for (const group of serviceGroups) {
-        if (jsonData.services[group] && jsonData.services[group][serviceCode]) {
+        let oneTimePaymentBill =
+          jsonData.services[group] && jsonData.services[group][serviceCode];
+  
+        if (oneTimePaymentBill) {
           return CONSTANT.BILL_DETAIL.TYPE_SERVICE.ONE;
         }
       }
-
-      if (
+  
+      let recurringPaymentBill =
         jsonData.services[CONSTANT.BILL_DETAIL.SERVICE_CODE.BILL_FINANCE] &&
-        jsonData.services[CONSTANT.BILL_DETAIL.SERVICE_CODE.BILL_FINANCE][serviceCode]
-      ) {
+        jsonData.services[CONSTANT.BILL_DETAIL.SERVICE_CODE.BILL_FINANCE][
+          serviceCode
+        ];
+  
+      if (recurringPaymentBill) {
         return CONSTANT.BILL_DETAIL.TYPE_SERVICE.MANY;
       }
-
+  
       return CONSTANT.BILL_DETAIL.UNKNOWN;
     } catch (error) {
       Logger.error("function getServiceCode | error:", error);
-      return false
+      return false;
     }
   }
+  
 }
 
 module.exports = GetJsonData;
