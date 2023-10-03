@@ -14,10 +14,11 @@ class BillCheck extends Model {
    * @param billCode
    * @returns object
    */
-  async getBillByBillCodeAsync(billCode) {
-    let sql = `SELECT * FROM ${this.tableName} WHERE billcode = $1 AND created_at >= NOW() - INTERVAL '${CONSTANT.BILL_DETAIL.BILL_CHECKING_TIME}'`;
+  async getBillByBillCodeAsync(billCode, billTime) {
+    billTime = billTime || '30 minutes';
+    let sql = `SELECT * FROM ${this.tableName} WHERE billcode = $1 AND created_at >= NOW() - INTERVAL '${billTime}'`;
     let result = await this.model.query(sql, [billCode]);
-
+  
     if (result.rows.length > 0) {
       return result.rows[0];
     }
